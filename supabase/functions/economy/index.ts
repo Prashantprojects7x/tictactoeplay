@@ -144,11 +144,21 @@ Deno.serve(async (req) => {
 
     switch (action) {
       case "purchase_item": {
-        const { item_id, item_type, price } = params;
-        if (!item_id || !item_type || typeof price !== "number" || price < 0)
+        const { item_id } = params;
+        if (!item_id || typeof item_id !== "string")
           return errorResponse("Invalid parameters");
 
+        const catalogItem = ITEM_CATALOG[item_id];
+        if (!catalogItem) return errorResponse("Unknown item");
+
+        const price = catalogItem.price;
+        const item_type = catalogItem.type;
+
         const profile = await getProfile(admin, userId);
+
+        if (catalogItem.unlockLevel && profile.level < catalogItem.unlockLevel)
+          return errorResponse("Level too low to purchase this item");
+
         if (profile.coins < price) return errorResponse("Not enough coins");
 
         const { data: existing } = await admin
