@@ -172,10 +172,12 @@ export function useMultiplayer() {
     joinRoom,
     sendMove,
     sendReset,
+    sendChat,
     leaveRoom,
     onMoveRef,
     onResetRef,
     onOpponentJoinRef,
     onOpponentLeaveRef,
+    onChatRef,
   };
 }
