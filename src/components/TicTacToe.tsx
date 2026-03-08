@@ -689,107 +689,124 @@ export default function TicTacToe() {
       <div className="flex-1 flex flex-col items-center justify-center gap-5 p-4 sm:p-6 z-10 relative">
 
         {/* Title */}
-        <motion.div className="flex flex-col items-center gap-2" initial={{ y: -40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }}>
-          <div className="flex items-center gap-2">
-            <Swords className="h-5 w-5 text-primary opacity-60" />
-            <h1 className="text-3xl font-black tracking-tighter sm:text-5xl" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+        <motion.div className="flex flex-col items-center gap-3" initial={{ y: -40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }}>
+          <div className="flex items-center gap-3">
+            <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
+              <Swords className="h-6 w-6 text-primary opacity-70" />
+            </motion.div>
+            <h1 className="text-4xl font-black tracking-tighter sm:text-5xl" style={{ fontFamily: "'Space Grotesk', 'JetBrains Mono', monospace" }}>
               <span className="text-gradient-title">TicTacToe</span>
             </h1>
-            <Swords className="h-5 w-5 text-accent opacity-60" />
+            <motion.div animate={{ rotate: [0, -10, 10, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}>
+              <Swords className="h-6 w-6 text-accent opacity-70" />
+            </motion.div>
           </div>
-          <div className="flex items-center gap-4 text-[10px] text-muted-foreground font-medium tracking-widest uppercase">
-            <span className="flex items-center gap-1"><Target className="h-3 w-3" /> Round {round}</span>
-            <span className="flex items-center gap-1"><Timer className="h-3 w-3" /> {formatTime(elapsedTime)}</span>
-            <span className="flex items-center gap-1"><Flame className="h-3 w-3 text-streak" /> {stats.winStreak}</span>
+          <div className="flex items-center gap-5 text-[10px] text-muted-foreground font-semibold tracking-widest uppercase">
+            <span className="flex items-center gap-1.5"><Target className="h-3 w-3 text-primary/60" /> Round {round}</span>
+            <span className="h-3 w-px bg-border/40" />
+            <span className="flex items-center gap-1.5"><Timer className="h-3 w-3 text-accent/60" /> {formatTime(elapsedTime)}</span>
+            <span className="h-3 w-px bg-border/40" />
+            <span className="flex items-center gap-1.5"><Flame className="h-3 w-3 text-streak" /> {stats.winStreak}</span>
             {isOnline && mp.state.roomCode && (
-              <span className="flex items-center gap-1 text-accent"><Globe className="h-3 w-3" /> {mp.state.roomCode}</span>
+              <>
+                <span className="h-3 w-px bg-border/40" />
+                <span className="flex items-center gap-1.5 text-accent"><Globe className="h-3 w-3" /> {mp.state.roomCode}</span>
+              </>
             )}
           </div>
           <XPDisplay totalWins={stats.wins} />
         </motion.div>
 
-        {/* Controls row */}
-        <motion.div className="flex flex-wrap items-center justify-center gap-2" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
-          {/* Mode toggle buttons */}
-          <div className="flex rounded-full overflow-hidden border border-border">
-            <button onClick={() => switchMode("local")}
-              className={`px-3 py-2 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1
-                ${gameMode === "local" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"}`}>
-              <Users className="h-3 w-3" /> Local
-            </button>
-            <button onClick={() => switchMode("ai")}
-              className={`px-3 py-2 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1
-                ${gameMode === "ai" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"}`}>
-              <Monitor className="h-3 w-3" /> AI
-            </button>
-            <button onClick={() => switchMode("online")}
-              className={`px-3 py-2 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1
-                ${gameMode === "online" ? "bg-accent text-accent-foreground" : "bg-card text-muted-foreground hover:text-foreground"}`}>
-              <Globe className="h-3 w-3" /> Online
-            </button>
+        {/* Mode selector — pill style */}
+        <motion.div className="flex flex-col items-center gap-3" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
+          <div className="glass-nav flex rounded-2xl overflow-hidden p-1 gap-1">
+            {([
+              { mode: "local" as GameMode, icon: Users, label: "Local" },
+              { mode: "ai" as GameMode, icon: Monitor, label: "AI" },
+              { mode: "online" as GameMode, icon: Globe, label: "Online" },
+            ]).map(({ mode, icon: Icon, label }) => (
+              <button key={mode} onClick={() => switchMode(mode)}
+                className={`relative px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 rounded-xl
+                  ${gameMode === mode
+                    ? mode === "online"
+                      ? "bg-accent/20 text-accent shadow-lg shadow-accent/10"
+                      : "bg-primary/20 text-primary shadow-lg shadow-primary/10"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
+                  }`}>
+                <Icon className="h-3.5 w-3.5" /> {label}
+                {gameMode === mode && (
+                  <motion.div layoutId="modeIndicator" className={`absolute inset-0 rounded-xl border ${mode === "online" ? "border-accent/30" : "border-primary/30"}`} transition={{ type: "spring", stiffness: 300, damping: 25 }} />
+                )}
+              </button>
+            ))}
           </div>
 
           {vsAI && (
-            <motion.div className="flex rounded-full overflow-hidden border border-border" initial={{ width: 0, opacity: 0 }} animate={{ width: "auto", opacity: 1 }}>
+            <motion.div className="glass-nav flex rounded-xl overflow-hidden p-1 gap-1" initial={{ width: 0, opacity: 0 }} animate={{ width: "auto", opacity: 1 }}>
               {(["easy", "medium", "hard"] as Difficulty[]).map((d) => (
                 <button key={d} onClick={() => { setDifficulty(d); resetBoard(); }}
-                  className={`px-3 py-2 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1
-                    ${d === difficulty ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"}`}>
+                  className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 rounded-lg
+                    ${d === difficulty ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}>
                   {d === "easy" ? <Zap className="h-3 w-3" /> : d === "medium" ? <Brain className="h-3 w-3" /> : <Sparkles className="h-3 w-3" />}
                   {d}
                 </button>
               ))}
             </motion.div>
           )}
+        </motion.div>
 
-          <button onClick={() => setSoundEnabled(!soundEnabled)} className="glass-card rounded-full p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all">
-            {soundEnabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+        {/* Navigation dock */}
+        <motion.div
+          className="glass-nav flex items-center gap-1 rounded-2xl px-2 py-1.5"
+          initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.15 }}
+        >
+          {/* Utility buttons */}
+          <button onClick={() => setSoundEnabled(!soundEnabled)}
+            className="nav-item-glow relative rounded-xl p-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all" title="Sound">
+            {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+          </button>
+          <button onClick={() => setIsFullscreen(!isFullscreen)}
+            className="nav-item-glow relative rounded-xl p-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
+            {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
           </button>
 
-          <button onClick={() => setIsFullscreen(!isFullscreen)} className="glass-card rounded-full p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all" title={isFullscreen ? "Exit fullscreen" : "Fullscreen mode"}>
-            {isFullscreen ? <Minimize className="h-3.5 w-3.5" /> : <Maximize className="h-3.5 w-3.5" />}
-          </button>
+          <div className="w-px h-5 bg-border/30 mx-1" />
 
+          {/* Profile / Auth */}
           {user ? (
             <button onClick={() => navigate("/profile")}
-              className="glass-card flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all">
-              <User className="h-3.5 w-3.5 text-accent" />
-              <span className="hidden sm:inline max-w-[80px] truncate">{user.email?.split("@")[0]}</span>
+              className="nav-item-glow relative flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all" title="Profile">
+              <User className="h-4 w-4 text-accent" />
+              <span className="hidden sm:inline text-[10px] font-semibold max-w-[70px] truncate">{user.email?.split("@")[0]}</span>
             </button>
           ) : (
             <button onClick={() => navigate("/auth")}
-              className="glass-card flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all">
-              <LogIn className="h-3.5 w-3.5 text-primary" /> Sign In
+              className="nav-item-glow relative flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all" title="Sign In">
+              <LogIn className="h-4 w-4 text-primary" />
             </button>
           )}
 
-          <button onClick={() => navigate("/leaderboard")}
-            className="glass-card flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all">
-            <Trophy className="h-3.5 w-3.5 text-[hsl(var(--gold))]" /> Leaderboard
-          </button>
+          <div className="w-px h-5 bg-border/30 mx-1" />
 
-          <button onClick={() => navigate("/shop")}
-            className="glass-card flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all">
-            <ShoppingBag className="h-3.5 w-3.5 text-primary" /> Shop
-          </button>
+          {/* Feature pages */}
+          {([
+            { path: "/leaderboard", icon: Trophy, color: "text-[hsl(var(--gold))]", label: "Ranks" },
+            { path: "/shop", icon: ShoppingBag, color: "text-primary", label: "Shop" },
+            { path: "/friends", icon: UserPlus, color: "text-accent", label: "Friends" },
+            { path: "/battlepass", icon: Sparkles, color: "text-[hsl(var(--gold))]", label: "Pass" },
+            { path: "/tournament", icon: Crown, color: "text-[hsl(var(--streak))]", label: "Cup" },
+          ]).map(({ path, icon: Icon, color, label }) => (
+            <button key={path} onClick={() => navigate(path)}
+              className="nav-item-glow relative flex items-center gap-1 rounded-xl px-2 py-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all" title={label}>
+              <Icon className={`h-4 w-4 ${color}`} />
+              <span className="hidden md:inline text-[10px] font-semibold">{label}</span>
+            </button>
+          ))}
 
-          <button onClick={() => navigate("/friends")}
-            className="glass-card flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all">
-            <UserPlus className="h-3.5 w-3.5 text-accent" /> Friends
-          </button>
+          <div className="w-px h-5 bg-border/30 mx-1 lg:hidden" />
 
-          <button onClick={() => navigate("/battlepass")}
-            className="glass-card flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all">
-            <Sparkles className="h-3.5 w-3.5 text-[hsl(var(--gold))]" /> Battle Pass
-          </button>
-
-          <button onClick={() => navigate("/tournament")}
-            className="glass-card flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all">
-            <Trophy className="h-3.5 w-3.5 text-[hsl(var(--streak))]" /> Tournaments
-          </button>
-
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="glass-card rounded-full p-2 text-muted-foreground hover:text-foreground active:scale-95 lg:hidden transition-all">
-            {sidebarOpen ? <X className="h-3.5 w-3.5" /> : <Menu className="h-3.5 w-3.5" />}
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="rounded-xl p-2 text-muted-foreground hover:text-foreground active:scale-90 lg:hidden transition-all">
+            {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </button>
         </motion.div>
 
