@@ -816,9 +816,9 @@ export default function TicTacToe() {
           )}
         </motion.div>
 
-        {/* Navigation dock */}
+        {/* Navigation dock — scrollable on mobile */}
         <motion.div
-          className="glass-nav flex items-center gap-1 rounded-2xl px-2 py-1.5"
+          className="glass-nav flex items-center gap-0.5 sm:gap-1 rounded-2xl px-1.5 sm:px-2 py-1 sm:py-1.5 max-w-[calc(100vw-1rem)] overflow-x-auto scrollbar-hide"
           initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.15 }}
         >
           {/* Settings */}
@@ -833,27 +833,27 @@ export default function TicTacToe() {
             setMusicVolume={music.setMusicVolume}
           />
           <button onClick={() => setIsFullscreen(!isFullscreen)}
-            className="nav-item-glow relative rounded-xl p-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
-            {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+            className="nav-item-glow relative rounded-xl p-1.5 sm:p-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all flex-shrink-0" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
+            {isFullscreen ? <Minimize className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Maximize className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
           </button>
 
-          <div className="w-px h-5 bg-border/30 mx-1" />
+          <div className="w-px h-4 sm:h-5 bg-border/30 mx-0.5 flex-shrink-0" />
 
           {/* Profile / Auth */}
           {user ? (
             <button onClick={() => navigate("/profile")}
-              className="nav-item-glow relative flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all" title="Profile">
-              <User className="h-4 w-4 text-accent" />
+              className="nav-item-glow relative flex items-center gap-1 rounded-xl px-1.5 sm:px-2.5 py-1.5 sm:py-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all flex-shrink-0" title="Profile">
+              <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent" />
               <span className="hidden sm:inline text-[10px] font-semibold max-w-[70px] truncate">{user.email?.split("@")[0]}</span>
             </button>
           ) : (
             <button onClick={() => navigate("/auth")}
-              className="nav-item-glow relative flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all" title="Sign In">
-              <LogIn className="h-4 w-4 text-primary" />
+              className="nav-item-glow relative flex items-center gap-1 rounded-xl px-1.5 sm:px-2.5 py-1.5 sm:py-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all flex-shrink-0" title="Sign In">
+              <LogIn className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
             </button>
           )}
 
-          <div className="w-px h-5 bg-border/30 mx-1" />
+          <div className="w-px h-4 sm:h-5 bg-border/30 mx-0.5 flex-shrink-0" />
 
           {/* Feature pages */}
           {([
@@ -865,16 +865,16 @@ export default function TicTacToe() {
             { path: "/achievements", icon: Medal, color: "text-[hsl(var(--neon-pink))]", label: "Badges" },
           ]).map(({ path, icon: Icon, color, label }) => (
             <button key={path} onClick={() => navigate(path)}
-              className="nav-item-glow relative flex items-center gap-1 rounded-xl px-2 py-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all" title={label}>
-              <Icon className={`h-4 w-4 ${color}`} />
+              className="nav-item-glow relative flex items-center gap-1 rounded-xl px-1.5 sm:px-2 py-1.5 sm:py-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all flex-shrink-0" title={label}>
+              <Icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${color}`} />
               <span className="hidden md:inline text-[10px] font-semibold">{label}</span>
             </button>
           ))}
 
-          <div className="w-px h-5 bg-border/30 mx-1 lg:hidden" />
+          <div className="w-px h-4 sm:h-5 bg-border/30 mx-0.5 lg:hidden flex-shrink-0" />
 
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="rounded-xl p-2 text-muted-foreground hover:text-foreground active:scale-90 lg:hidden transition-all">
-            {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="rounded-xl p-1.5 sm:p-2 text-muted-foreground hover:text-foreground active:scale-90 lg:hidden transition-all flex-shrink-0">
+            {sidebarOpen ? <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Menu className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
           </button>
         </motion.div>
 
