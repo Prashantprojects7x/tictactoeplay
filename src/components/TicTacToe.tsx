@@ -223,6 +223,21 @@ export default function TicTacToe() {
   // Multiplayer
   const mp = useMultiplayer();
   const [showLobby, setShowLobby] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+
+  // Listen for incoming chat messages
+  useEffect(() => {
+    mp.onChatRef.current = (text: string, id: string, isEmoji: boolean) => {
+      setChatMessages((prev) => [...prev, { id, text, sender: "opponent", timestamp: Date.now(), isEmoji }]);
+    };
+  }, [mp.onChatRef]);
+
+  const handleSendChat = useCallback((text: string) => {
+    const isEmoji = /^\p{Emoji}$/u.test(text);
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    setChatMessages((prev) => [...prev, { id, text, sender: "me", timestamp: Date.now(), isEmoji }]);
+    mp.sendChat(text, id, isEmoji);
+  }, [mp]);
 
   // Handle URL-based challenge/join
   useEffect(() => {
