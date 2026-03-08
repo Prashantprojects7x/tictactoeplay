@@ -178,7 +178,6 @@ export function useTournament() {
   const createTournament = useCallback(async (name: string, entryFee: number) => {
     if (!user) { toast("Sign in first"); return null; }
 
-    // Only deduct coins if there's an entry fee
     if (entryFee > 0) {
       if (userCoins < entryFee) { toast("Not enough coins!"); return null; }
 
@@ -204,10 +203,10 @@ export function useTournament() {
       .single();
 
     if (error || !data) {
-      // Refund via edge function if we deducted
+      // Refund via server-verified tournament_refund
       if (entryFee > 0) {
         await supabase.functions.invoke("economy", {
-          body: { action: "award_coins", target_user_id: user.id, amount: entryFee },
+          body: { action: "tournament_refund", tournament_id: "refund_creation_failure", amount: entryFee },
         });
       }
       toast("Failed to create tournament");
@@ -258,8 +257,9 @@ export function useTournament() {
       .insert({ tournament_id: tournamentId, user_id: user.id, seed });
 
     if (error) {
+      // Refund via server-verified action
       await supabase.functions.invoke("economy", {
-        body: { action: "award_coins", target_user_id: user.id, amount: t.entry_fee },
+        body: { action: "tournament_refund", tournament_id: tournamentId, amount: t.entry_fee },
       });
       toast("Failed to join");
       return false;
@@ -338,36 +338,27 @@ export function useTournament() {
 
     for (const m of matchInserts) {
       if (m.status === "bye" && m.player1_id) {
-        await advanceWinner(tournamentId, 1, m.match_index, m.player1_id);
+        // For bye matches, use the edge function to advance
+        // Find the inserted match to get its ID
+        const { data: byeMatch } = await supabase
+          .from("tournament_matches")
+          .select("id")
+          .eq("tournament_id", tournamentId)
+          .eq("round", m.round)
+          .eq("match_index", m.match_index)
+          .single();
+        if (byeMatch) {
+          // Bye matches are already set with winner, just advance to next round
+          await advanceByeWinner(tournamentId, m.round, m.match_index, m.player1_id);
+        }
       }
     }
 
     toast("🏟️ Tournament started!");
   }, []);
 
-  const reportResult = useCallback(async (matchId: string, winnerId: string) => {
-    const match = matches.find((m) => m.id === matchId);
-    if (!match) return;
-
-    await supabase
-      .from("tournament_matches")
-      .update({ winner_id: winnerId, status: "finished", finished_at: new Date().toISOString() })
-      .eq("id", matchId);
-
-    const loserId = match.player1_id === winnerId ? match.player2_id : match.player1_id;
-    if (loserId) {
-      await supabase
-        .from("tournament_participants")
-        .update({ eliminated: true })
-        .eq("tournament_id", match.tournament_id)
-        .eq("user_id", loserId);
-    }
-
-    await advanceWinner(match.tournament_id, match.round, match.match_index, winnerId);
-    await fetchTournamentDetails(match.tournament_id);
-  }, [matches, fetchTournamentDetails]);
-
-  const advanceWinner = async (tournamentId: string, round: number, matchIndex: number, winnerId: string) => {
+  // Local helper for advancing bye winners (no match result needed)
+  const advanceByeWinner = async (tournamentId: string, round: number, matchIndex: number, winnerId: string) => {
     const nextRound = round + 1;
     const nextMatchIndex = Math.floor(matchIndex / 2);
     const isPlayer1 = matchIndex % 2 === 0;
@@ -392,24 +383,24 @@ export function useTournament() {
         .from("tournament_matches")
         .update(update)
         .eq("id", nextMatch.id);
-    } else {
-      // Final — award prize via edge function
-      const { data: t } = await supabase.from("tournaments").select("prize_pool").eq("id", tournamentId).single();
-
-      await supabase
-        .from("tournaments")
-        .update({ winner_id: winnerId, status: "finished", finished_at: new Date().toISOString() })
-        .eq("id", tournamentId);
-
-      if (t) {
-        await supabase.functions.invoke("economy", {
-          body: { action: "award_coins", target_user_id: winnerId, amount: t.prize_pool },
-        });
-      }
-
-      toast("🏆 Tournament complete! Winner crowned!");
     }
   };
+
+  // Report match result via server-verified edge function
+  const reportResult = useCallback(async (matchId: string, winnerId: string) => {
+    const { data, error } = await supabase.functions.invoke("economy", {
+      body: { action: "report_match_result", match_id: matchId, winner_id: winnerId },
+    });
+
+    if (error || data?.error) {
+      toast(data?.error || "Failed to report result");
+      return;
+    }
+
+    if (activeTournament) {
+      await fetchTournamentDetails(activeTournament.id);
+    }
+  }, [activeTournament, fetchTournamentDetails]);
 
   const isUserInTournament = useCallback((tournamentId: string) => {
     if (!user) return false;

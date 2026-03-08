@@ -19,21 +19,5 @@ export function useProfileSync() {
     [user]
   );
 
-  const addCoinsToProfile = useCallback(
-    async (amount: number) => {
-      if (!user) return;
-      if (amount > 0) {
-        await supabase.functions.invoke("economy", {
-          body: { action: "award_coins", target_user_id: user.id, amount },
-        });
-      } else if (amount < 0) {
-        await supabase.functions.invoke("economy", {
-          body: { action: "deduct_coins", amount: Math.abs(amount) },
-        });
-      }
-    },
-    [user]
-  );
-
-  return { syncGameResult, addCoinsToProfile };
+  return { syncGameResult };
 }
