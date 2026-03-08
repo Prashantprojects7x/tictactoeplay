@@ -6,6 +6,8 @@ import {
   Volume2, VolumeX, Undo2, Redo2, Eye, Shield, Timer, Menu, X,
   Crown, Flame, Target, Swords, Globe, LogIn, LogOut, User, Maximize, Minimize, ShoppingBag, UserPlus,
 } from "lucide-react";
+import SettingsMenu from "./game/SettingsMenu";
+import { useBackgroundMusic } from "@/hooks/useBackgroundMusic";
 import { toast } from "sonner";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import type { Player, Difficulty, BoardTheme, MoveRecord } from "./game/types";
@@ -209,6 +211,11 @@ export default function TicTacToe() {
   const [gameOver, setGameOver] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [sfxVolume, setSfxVolume] = useState(() => {
+    const saved = localStorage.getItem("sfx-volume");
+    return saved !== null ? parseFloat(saved) : 0.5;
+  });
+  const music = useBackgroundMusic();
   const [round, setRound] = useState(1);
   const [boardTheme, setBoardTheme] = useState<BoardTheme>("default");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -290,13 +297,18 @@ export default function TicTacToe() {
 
   const refreshSidebar = () => setRefreshKey((k) => k + 1);
 
+  // Save sfxVolume
+  useEffect(() => { localStorage.setItem("sfx-volume", String(sfxVolume)); }, [sfxVolume]);
+
+  const sfxVol = soundEnabled ? sfxVolume * 0.2 : 0;
+
   const addCoins = useCallback((player: "X" | "O", amount: number) => {
     const updated = addCoinsToStorage(player, amount);
     if (player === "X") setCoinsX(updated);
     else setCoinsO(updated);
-    if (amount > 0 && soundEnabled) playSound("coin", 0.08);
+    if (amount > 0 && soundEnabled) playSound("coin", sfxVol);
     refreshSidebar();
-  }, [soundEnabled]);
+  }, [soundEnabled, sfxVol]);
 
   const checkAchievements = useCallback((elapsed: number = 0) => {
     const stats = getGameStats();
@@ -306,7 +318,7 @@ export default function TicTacToe() {
         const def = ACHIEVEMENT_DEFS[id];
         toasts.push(`🎉 Achievement: ${def?.name || id}`);
         addCoins("X", 5);
-        if (soundEnabled) playSound("achievement", 0.1);
+        if (soundEnabled) playSound("achievement", sfxVol);
       }
     };
     if (stats.wins >= 1) tryUnlock("first_win");
@@ -395,8 +407,8 @@ export default function TicTacToe() {
 
       // Play appropriate sound based on outcome
       if (soundEnabled) {
-        if (outcome === "loss") playSound("loss", 0.1);
-        else playSound("win", 0.1);
+        if (outcome === "loss") playSound("loss", sfxVol);
+        else playSound("win", sfxVol);
       }
 
       if (shouldAwardCoins) {
@@ -427,7 +439,7 @@ export default function TicTacToe() {
       if (timerRef.current) clearInterval(timerRef.current);
       setScore((s) => ({ ...s, draws: s.draws + 1 }));
       setGameOver(true);
-      if (soundEnabled) playSound("draw", 0.06);
+      if (soundEnabled) playSound("draw", sfxVol);
       recordDraw();
       addGameHistory({ outcome: "draw", time: elapsed, date: Date.now(), mode: isOnline ? "online" : vsAI ? "ai" : "pvp", opponent: isOnline ? "Online Player" : vsAI ? `AI (${difficulty})` : "Player" });
 
@@ -459,7 +471,7 @@ export default function TicTacToe() {
       moveCountRef.current += 1;
       setMoveHistory((h) => [...h, { index, player, moveNumber: moveCountRef.current, timestamp: Date.now() }]);
       setRedoStack([]);
-      if (soundEnabled) playSound("place", 0.08);
+      if (soundEnabled) playSound("place", sfxVol);
     };
     mp.onResetRef.current = () => {
       resetBoard();
@@ -494,7 +506,7 @@ export default function TicTacToe() {
     setIsXTurn(!isXTurn);
     setMoveHistory((h) => [...h, { index: i, player, moveNumber: moveCountRef.current, timestamp: Date.now() }]);
     setRedoStack([]);
-    if (soundEnabled) playSound("place", 0.08);
+    if (soundEnabled) playSound("place", sfxVol);
     setPeekCell(null);
     setShieldedCells((prev) => {
       const updated: typeof prev = {};
@@ -547,10 +559,10 @@ export default function TicTacToe() {
     if (isOnline) return;
     const cost = POWERUP_COSTS.peek;
     const coins = currentPlayer === "X" ? coinsX : coinsO;
-    if (coins < cost) { if (soundEnabled) playSound("error", 0.08); toast(`Not enough coins (${cost})`); return; }
+    if (coins < cost) { if (soundEnabled) playSound("error", sfxVol); toast(`Not enough coins (${cost})`); return; }
     if (gameOver) return;
     addCoins(currentPlayer, -cost);
-    if (soundEnabled) playSound("powerup", 0.1);
+    if (soundEnabled) playSound("powerup", sfxVol);
     const best = findBestMoveForPlayer(board, currentPlayer);
     if (best !== null) { setPeekCell(best); setTimeout(() => setPeekCell(null), 2200); toast("🔍 Best move highlighted!"); }
   };
@@ -593,7 +605,7 @@ export default function TicTacToe() {
   }, []);
 
   const reset = () => {
-    if (soundEnabled) playSound("click", 0.08);
+    if (soundEnabled) playSound("click", sfxVol);
     resetBoard();
     if (isOnline) mp.sendReset();
   };
@@ -601,7 +613,7 @@ export default function TicTacToe() {
   const resetAll = () => { resetBoard(); setScore({ X: 0, O: 0, draws: 0 }); setRound(1); };
 
   const switchMode = (mode: GameMode) => {
-    if (soundEnabled) playSound("click", 0.08);
+    if (soundEnabled) playSound("click", sfxVol);
     if (isOnline) mp.leaveRoom();
     setGameMode(mode);
     setShowLobby(mode === "online");
@@ -780,11 +792,17 @@ export default function TicTacToe() {
           className="glass-nav flex items-center gap-1 rounded-2xl px-2 py-1.5"
           initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.15 }}
         >
-          {/* Utility buttons */}
-          <button onClick={() => setSoundEnabled(!soundEnabled)}
-            className="nav-item-glow relative rounded-xl p-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all" title="Sound">
-            {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-          </button>
+          {/* Settings */}
+          <SettingsMenu
+            soundEnabled={soundEnabled}
+            setSoundEnabled={setSoundEnabled}
+            sfxVolume={sfxVolume}
+            setSfxVolume={setSfxVolume}
+            musicEnabled={music.musicEnabled}
+            setMusicEnabled={music.setMusicEnabled}
+            musicVolume={music.musicVolume}
+            setMusicVolume={music.setMusicVolume}
+          />
           <button onClick={() => setIsFullscreen(!isFullscreen)}
             className="nav-item-glow relative rounded-xl p-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
             {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
