@@ -50,20 +50,16 @@ export function useAchievements() {
 
       const comparator = achievement.requirement.comparator ?? "gte";
       if (comparator === "lte") {
-        // For "lte" (speed achievements), progress is inverted: lower is better
-        // If best_time is null, no progress. If <= target, 100%
         if (statValue <= achievement.requirement.value) return 100;
-        // Show partial progress (closer to target = more progress)
         return Math.min(99, Math.round((achievement.requirement.value / statValue) * 100));
       }
 
-      // gte: higher is better
       return Math.min(100, Math.round((statValue / achievement.requirement.value) * 100));
     },
     [profile]
   );
 
-  // Check and claim newly completed achievements
+  // Check and claim newly completed achievements via server-verified endpoint
   const checkAndClaim = useCallback(async () => {
     if (!user || !profile) return [];
 
@@ -81,20 +77,13 @@ export function useAchievements() {
         : statValue >= ach.requirement.value;
 
       if (met) {
-        const { error } = await supabase
-          .from("user_achievements")
-          .insert({ user_id: user.id, achievement_id: ach.id });
+        // Use server-verified claim_achievement action
+        const { data, error } = await supabase.functions.invoke("economy", {
+          body: { action: "claim_achievement", achievement_id: ach.id },
+        });
 
-        if (!error) {
+        if (!error && !data?.error) {
           newlyUnlocked.push(ach);
-
-          // Award coins via economy edge function
-          if (ach.coinReward > 0) {
-            await supabase.functions.invoke("economy", {
-              body: { action: "award_coins", target_user_id: user.id, amount: ach.coinReward },
-            });
-          }
-
           toast(`🏅 Achievement Unlocked: ${ach.name}! +${ach.coinReward} coins`);
         }
       }

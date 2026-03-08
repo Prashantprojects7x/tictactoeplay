@@ -210,7 +210,7 @@ type GameMode = "local" | "ai" | "online";
 // ─── Main Component ─────────────────────────────────────────────
 export default function TicTacToe() {
   const { user, signOut } = useAuth();
-  const { syncGameResult, addCoinsToProfile } = useProfileSync();
+  const { syncGameResult } = useProfileSync();
   const { addBattlePassXp } = useBattlePass();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -441,7 +441,6 @@ export default function TicTacToe() {
       }
 
       if (shouldAwardCoins) {
-        addCoinsToProfile(10);
         addCoins(winner, 10);
         toast(`🎉 ${getPlayerName(winner)} wins! +10 coins credited to your account`);
       } else {

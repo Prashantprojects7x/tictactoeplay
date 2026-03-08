@@ -32,7 +32,37 @@ const TOTAL_TIERS = 20;
 const COIN_TIERS: Record<number, number> = {
   1: 50, 3: 100, 5: 200, 7: 150, 9: 300, 11: 100, 13: 250, 15: 500, 17: 400, 19: 750,
 };
-const DIAMOND_TOKEN_TIER = 20; // Tier 20 grants a diamond token for free tournament creation
+const DIAMOND_TOKEN_TIER = 20;
+
+// Achievement definitions (must match frontend achievementsData.ts)
+const ACHIEVEMENT_REWARDS: Record<string, number> = {
+  "first-win": 50, "streak-3": 100, "streak-5": 200, "streak-10": 500,
+  "games-10": 100, "games-50": 250, "games-100": 500,
+  "wins-10": 150, "wins-25": 300, "wins-50": 750,
+  "speed-30": 200, "speed-15": 500,
+  "level-5": 100, "level-10": 250, "level-25": 500,
+  "coins-500": 100, "coins-1000": 250,
+};
+
+const ACHIEVEMENT_REQUIREMENTS: Record<string, { stat: string; value: number; comparator?: string }> = {
+  "first-win": { stat: "total_wins", value: 1 },
+  "streak-3": { stat: "max_streak", value: 3 },
+  "streak-5": { stat: "max_streak", value: 5 },
+  "streak-10": { stat: "max_streak", value: 10 },
+  "games-10": { stat: "total_games", value: 10 },
+  "games-50": { stat: "total_games", value: 50 },
+  "games-100": { stat: "total_games", value: 100 },
+  "wins-10": { stat: "total_wins", value: 10 },
+  "wins-25": { stat: "total_wins", value: 25 },
+  "wins-50": { stat: "total_wins", value: 50 },
+  "speed-30": { stat: "best_time", value: 30, comparator: "lte" },
+  "speed-15": { stat: "best_time", value: 15, comparator: "lte" },
+  "level-5": { stat: "level", value: 5 },
+  "level-10": { stat: "level", value: 10 },
+  "level-25": { stat: "level", value: 25 },
+  "coins-500": { stat: "coins", value: 500 },
+  "coins-1000": { stat: "coins", value: 1000 },
+};
 
 function getAdminClient() {
   return createClient(
@@ -99,7 +129,6 @@ Deno.serve(async (req) => {
         const profile = await getProfile(admin, userId);
         if (profile.coins < price) return errorResponse("Not enough coins");
 
-        // Check if already purchased
         const { data: existing } = await admin
           .from("user_purchases")
           .select("id")
@@ -108,19 +137,16 @@ Deno.serve(async (req) => {
           .maybeSingle();
         if (existing) return errorResponse("Already purchased");
 
-        // Deduct coins
         const { error: coinErr } = await admin
           .from("profiles")
           .update({ coins: profile.coins - price })
           .eq("user_id", userId);
         if (coinErr) return errorResponse("Failed to deduct coins");
 
-        // Insert purchase
         const { error: purchaseErr } = await admin
           .from("user_purchases")
           .insert({ user_id: userId, item_id, item_type });
         if (purchaseErr) {
-          // Refund
           await admin.from("profiles").update({ coins: profile.coins }).eq("user_id", userId);
           return errorResponse("Purchase failed");
         }
@@ -132,7 +158,6 @@ Deno.serve(async (req) => {
         const profile = await getProfile(admin, userId);
         if (profile.coins < BATTLE_PASS_COST) return errorResponse("Not enough coins");
 
-        // Check if already owned
         const { data: existing } = await admin
           .from("battle_pass")
           .select("id")
@@ -183,7 +208,6 @@ Deno.serve(async (req) => {
           updates.win_streak = 0;
         }
 
-        // XP & Level
         const { newXp, newLevel } = processXpGain(profile.xp, profile.level, xp_gained);
         updates.xp = newXp;
         updates.level = newLevel;
@@ -255,18 +279,180 @@ Deno.serve(async (req) => {
         return jsonResponse({ success: true, coins: profile.coins - amount });
       }
 
-      case "award_coins": {
-        const { target_user_id, amount } = params;
-        if (typeof amount !== "number" || amount <= 0 || amount > 10000)
-          return errorResponse("Invalid amount");
-        if (!target_user_id) return errorResponse("Missing target user");
+      // Server-verified achievement claim — validates eligibility before awarding coins
+      case "claim_achievement": {
+        const { achievement_id } = params;
+        if (!achievement_id || typeof achievement_id !== "string")
+          return errorResponse("Invalid achievement_id");
 
-        const targetProfile = await getProfile(admin, target_user_id);
+        const reward = ACHIEVEMENT_REWARDS[achievement_id];
+        const requirement = ACHIEVEMENT_REQUIREMENTS[achievement_id];
+        if (reward === undefined || !requirement)
+          return errorResponse("Unknown achievement");
+
+        // Check if already claimed
+        const { data: existing } = await admin
+          .from("user_achievements")
+          .select("id")
+          .eq("user_id", userId)
+          .eq("achievement_id", achievement_id)
+          .maybeSingle();
+        if (existing) return errorResponse("Already claimed");
+
+        // Verify eligibility from profile stats
+        const profile = await getProfile(admin, userId);
+        const statValue = profile[requirement.stat];
+        if (statValue === null || statValue === undefined)
+          return errorResponse("Requirement not met");
+
+        const comparator = requirement.comparator ?? "gte";
+        const met = comparator === "lte"
+          ? statValue <= requirement.value
+          : statValue >= requirement.value;
+        if (!met) return errorResponse("Requirement not met");
+
+        // Insert achievement record
+        const { error: achErr } = await admin
+          .from("user_achievements")
+          .insert({ user_id: userId, achievement_id });
+        if (achErr) return errorResponse("Failed to claim achievement");
+
+        // Award coins
+        if (reward > 0) {
+          await admin
+            .from("profiles")
+            .update({ coins: profile.coins + reward })
+            .eq("user_id", userId);
+        }
+
+        return jsonResponse({ success: true, coins_awarded: reward });
+      }
+
+      // Server-verified tournament match result reporting
+      case "report_match_result": {
+        const { match_id, winner_id } = params;
+        if (!match_id || !winner_id) return errorResponse("Missing match_id or winner_id");
+
+        // Fetch the match
+        const { data: match, error: matchErr } = await admin
+          .from("tournament_matches")
+          .select("*")
+          .eq("id", match_id)
+          .single();
+        if (matchErr || !match) return errorResponse("Match not found");
+
+        // Verify caller is a participant
+        if (userId !== match.player1_id && userId !== match.player2_id)
+          return errorResponse("You are not a participant in this match");
+
+        // Verify winner_id is one of the two players
+        if (winner_id !== match.player1_id && winner_id !== match.player2_id)
+          return errorResponse("Invalid winner — must be a match participant");
+
+        // Verify match is in ready state
+        if (match.status !== "ready")
+          return errorResponse("Match is not in ready state");
+
+        // Update match result
+        await admin
+          .from("tournament_matches")
+          .update({ winner_id, status: "finished", finished_at: new Date().toISOString() })
+          .eq("id", match_id);
+
+        // Eliminate loser
+        const loserId = match.player1_id === winner_id ? match.player2_id : match.player1_id;
+        if (loserId) {
+          await admin
+            .from("tournament_participants")
+            .update({ eliminated: true })
+            .eq("tournament_id", match.tournament_id)
+            .eq("user_id", loserId);
+        }
+
+        // Advance winner to next round
+        const nextRound = match.round + 1;
+        const nextMatchIndex = Math.floor(match.match_index / 2);
+        const isPlayer1 = match.match_index % 2 === 0;
+
+        const { data: nextMatch } = await admin
+          .from("tournament_matches")
+          .select("*")
+          .eq("tournament_id", match.tournament_id)
+          .eq("round", nextRound)
+          .eq("match_index", nextMatchIndex)
+          .maybeSingle();
+
+        if (nextMatch) {
+          const update: Record<string, unknown> = {};
+          if (isPlayer1) update.player1_id = winner_id;
+          else update.player2_id = winner_id;
+
+          const otherPlayer = isPlayer1 ? nextMatch.player2_id : nextMatch.player1_id;
+          if (otherPlayer) update.status = "ready";
+
+          await admin.from("tournament_matches").update(update).eq("id", nextMatch.id);
+        } else {
+          // Final match — award prize
+          const { data: t } = await admin
+            .from("tournaments")
+            .select("prize_pool")
+            .eq("id", match.tournament_id)
+            .single();
+
+          await admin
+            .from("tournaments")
+            .update({ winner_id, status: "finished", finished_at: new Date().toISOString() })
+            .eq("id", match.tournament_id);
+
+          if (t && t.prize_pool > 0) {
+            const winnerProfile = await getProfile(admin, winner_id);
+            await admin
+              .from("profiles")
+              .update({ coins: winnerProfile.coins + t.prize_pool })
+              .eq("user_id", winner_id);
+          }
+        }
+
+        return jsonResponse({ success: true });
+      }
+
+      // Server-side tournament refund (validates tournament context)
+      case "tournament_refund": {
+        const { tournament_id, amount } = params;
+        if (!tournament_id || typeof amount !== "number" || amount <= 0 || amount > 10000)
+          return errorResponse("Invalid parameters");
+
+        // Verify the tournament exists and the user is the creator or a participant
+        const { data: tournament } = await admin
+          .from("tournaments")
+          .select("id, created_by, entry_fee")
+          .eq("id", tournament_id)
+          .single();
+        if (!tournament) return errorResponse("Tournament not found");
+
+        // Verify amount matches entry fee
+        if (amount > tournament.entry_fee)
+          return errorResponse("Refund amount exceeds entry fee");
+
+        // Verify user is creator or participant
+        const isCreator = tournament.created_by === userId;
+        const { data: participant } = await admin
+          .from("tournament_participants")
+          .select("id")
+          .eq("tournament_id", tournament_id)
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if (!isCreator && !participant)
+          return errorResponse("Not associated with this tournament");
+
+        const profile = await getProfile(admin, userId);
         await admin
           .from("profiles")
-          .update({ coins: targetProfile.coins + amount })
-          .eq("user_id", target_user_id);
-        return jsonResponse({ success: true });
+          .update({ coins: profile.coins + amount })
+          .eq("user_id", userId);
+
+        return jsonResponse({ success: true, coins: profile.coins + amount });
       }
 
       case "use_diamond_token": {
