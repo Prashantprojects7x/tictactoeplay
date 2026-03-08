@@ -559,10 +559,10 @@ export default function TicTacToe() {
     if (isOnline) return;
     const cost = POWERUP_COSTS.peek;
     const coins = currentPlayer === "X" ? coinsX : coinsO;
-    if (coins < cost) { if (soundEnabled) playSound("error", 0.08); toast(`Not enough coins (${cost})`); return; }
+    if (coins < cost) { if (soundEnabled) playSound("error", sfxVol); toast(`Not enough coins (${cost})`); return; }
     if (gameOver) return;
     addCoins(currentPlayer, -cost);
-    if (soundEnabled) playSound("powerup", 0.1);
+    if (soundEnabled) playSound("powerup", sfxVol);
     const best = findBestMoveForPlayer(board, currentPlayer);
     if (best !== null) { setPeekCell(best); setTimeout(() => setPeekCell(null), 2200); toast("🔍 Best move highlighted!"); }
   };
