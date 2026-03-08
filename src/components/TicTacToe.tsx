@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   RotateCcw, Monitor, Users, Trophy, Zap, Brain, Sparkles,
   Volume2, VolumeX, Undo2, Redo2, Eye, Shield, Timer, Menu, X,
-  Crown, Flame, Target, Swords,
+  Crown, Flame, Target, Swords, Globe,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { Player, Difficulty, BoardTheme, MoveRecord } from "./game/types";
@@ -15,6 +15,8 @@ import {
   unlockAchievementStorage, getGameStats, checkDailyLogin, getPlayerName,
 } from "./game/storage";
 import Sidebar from "./game/Sidebar";
+import { useMultiplayer } from "./game/useMultiplayer";
+import MultiplayerLobby from "./game/MultiplayerLobby";
 
 // ─── Confetti ──────────────────────────────────────────────────
 function Confetti() {
@@ -107,36 +109,35 @@ function XMark({ isWin }: { isWin: boolean }) {
 function OMark({ isWin }: { isWin: boolean }) {
   return (
     <motion.svg viewBox="0 0 50 50" className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14"
-      initial={{ scale: 0, rotate: 90 }} animate={{ scale: 1, rotate: 0 }}
+      initial={{ scale: 0, rotate: 180 }} animate={{ scale: 1, rotate: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 12 }}>
-      <motion.circle cx="25" cy="25" r="14"
+      <motion.circle cx="25" cy="25" r="14" fill="none"
         stroke={isWin ? "hsl(48,100%,55%)" : "url(#oGrad)"}
-        strokeWidth="4.5" fill="none" strokeLinecap="round"
+        strokeWidth="4.5" strokeLinecap="round"
         initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
         transition={{ duration: 0.35 }}
         filter={isWin ? "drop-shadow(0 0 6px hsl(48,100%,55%))" : "drop-shadow(0 0 4px hsl(165,80%,48%))"}
       />
       <defs>
         <linearGradient id="oGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="hsl(165,80%,52%)" />
-          <stop offset="100%" stopColor="hsl(145,75%,58%)" />
+          <stop offset="0%" stopColor="hsl(165,85%,55%)" />
+          <stop offset="100%" stopColor="hsl(185,80%,50%)" />
         </linearGradient>
       </defs>
     </motion.svg>
   );
 }
 
-// ─── XP Level display ───────────────────────────────────────────
+// ─── XP Display ─────────────────────────────────────────────────
 function XPDisplay({ totalWins }: { totalWins: number }) {
   const level = Math.floor(totalWins / 5) + 1;
   const xpInLevel = totalWins % 5;
   const xpPercent = (xpInLevel / 5) * 100;
-
   return (
-    <div className="flex items-center gap-2 w-full max-w-[200px]">
+    <div className="flex items-center gap-2 w-full max-w-[240px]">
       <div className="flex items-center gap-1">
-        <Crown className="h-3.5 w-3.5 text-gold" />
-        <span className="text-[10px] font-bold text-gold" style={{ fontFamily: "'JetBrains Mono'" }}>Lv.{level}</span>
+        <Crown className="h-3 w-3 text-gold" />
+        <span className="text-[10px] font-bold text-gold">Lv.{level}</span>
       </div>
       <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
         <motion.div
@@ -171,13 +172,15 @@ function TurnIndicator({ isXTurn, gameOver }: { isXTurn: boolean; gameOver: bool
   );
 }
 
+type GameMode = "local" | "ai" | "online";
+
 // ─── Main Component ─────────────────────────────────────────────
 export default function TicTacToe() {
   const [board, setBoard] = useState<Player[]>(Array(9).fill(null));
   const [isXTurn, setIsXTurn] = useState(true);
   const [winLine, setWinLine] = useState<number[] | null>(null);
   const [score, setScore] = useState({ X: 0, O: 0, draws: 0 });
-  const [vsAI, setVsAI] = useState(false);
+  const [gameMode, setGameMode] = useState<GameMode>("local");
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
   const [gameOver, setGameOver] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -201,6 +204,14 @@ export default function TicTacToe() {
   const [peekCell, setPeekCell] = useState<number | null>(null);
   const [shieldedCells, setShieldedCells] = useState<Record<number, { player: "X" | "O"; turns: number }>>({});
   const [awaitingShield, setAwaitingShield] = useState(false);
+
+  // Multiplayer
+  const mp = useMultiplayer();
+  const [showLobby, setShowLobby] = useState(false);
+
+  const vsAI = gameMode === "ai";
+  const isOnline = gameMode === "online";
+  const isMyTurn = isOnline ? (mp.state.myRole === "X" ? isXTurn : !isXTurn) : true;
 
   const { winner } = checkWinner(board);
   const isDraw = !winner && board.every(Boolean);
@@ -277,8 +288,18 @@ export default function TicTacToe() {
       setTimeout(() => setShowConfetti(false), 3500);
       addCoins(winner, 10);
       toast(`🎉 ${getPlayerName(winner)} wins! +10 coins`);
-      if (winner === "X" || !vsAI) { recordWin(elapsed); } else { recordLoss(); }
-      addGameHistory({ outcome: vsAI && winner === "O" ? "loss" : "win", time: elapsed, date: Date.now(), mode: vsAI ? "ai" : "pvp", opponent: vsAI ? `AI (${difficulty})` : "Player" });
+
+      if (isOnline) {
+        const myWin = winner === mp.state.myRole;
+        if (myWin) recordWin(elapsed); else recordLoss();
+        addGameHistory({ outcome: myWin ? "win" : "loss", time: elapsed, date: Date.now(), mode: "online", opponent: "Online Player" });
+      } else if (vsAI) {
+        if (winner === "X") recordWin(elapsed); else recordLoss();
+        addGameHistory({ outcome: winner === "X" ? "win" : "loss", time: elapsed, date: Date.now(), mode: "ai", opponent: `AI (${difficulty})` });
+      } else {
+        recordWin(elapsed);
+        addGameHistory({ outcome: "win", time: elapsed, date: Date.now(), mode: "pvp", opponent: "Player" });
+      }
       checkAchievements(elapsed);
     } else if (isDraw) {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -286,11 +307,12 @@ export default function TicTacToe() {
       setGameOver(true);
       if (soundEnabled) playSound("draw", 0.06);
       recordDraw();
-      addGameHistory({ outcome: "draw", time: Math.floor((Date.now() - startTimeRef.current) / 1000), date: Date.now(), mode: vsAI ? "ai" : "pvp", opponent: vsAI ? `AI (${difficulty})` : "Player" });
+      addGameHistory({ outcome: "draw", time: Math.floor((Date.now() - startTimeRef.current) / 1000), date: Date.now(), mode: isOnline ? "online" : vsAI ? "ai" : "pvp", opponent: isOnline ? "Online Player" : vsAI ? `AI (${difficulty})` : "Player" });
       refreshSidebar();
     }
-  }, [board, winner, isDraw, gameOver, soundEnabled, addCoins, vsAI, difficulty, checkAchievements]);
+  }, [board, winner, isDraw, gameOver, soundEnabled, addCoins, vsAI, isOnline, difficulty, checkAchievements, mp.state.myRole]);
 
+  // AI move
   useEffect(() => {
     if (vsAI && !isXTurn && !winner && !isDraw && !gameOver) {
       const timeout = setTimeout(() => {
@@ -302,9 +324,39 @@ export default function TicTacToe() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isXTurn, vsAI, board, winner, isDraw, difficulty, gameOver]);
 
+  // Multiplayer: receive moves
+  useEffect(() => {
+    mp.onMoveRef.current = (index: number, player: "X" | "O", newBoard: Player[]) => {
+      setBoard(newBoard);
+      setIsXTurn(player === "X" ? false : true);
+      moveCountRef.current += 1;
+      setMoveHistory((h) => [...h, { index, player, moveNumber: moveCountRef.current, timestamp: Date.now() }]);
+      setRedoStack([]);
+      if (soundEnabled) playSound("place", 0.08);
+    };
+    mp.onResetRef.current = () => {
+      resetBoard();
+    };
+    mp.onOpponentJoinRef.current = () => {
+      toast("🎉 Opponent joined the room!");
+    };
+    mp.onOpponentLeaveRef.current = () => {
+      toast("👋 Opponent left the room");
+    };
+  }, [soundEnabled, mp.onMoveRef, mp.onResetRef, mp.onOpponentJoinRef, mp.onOpponentLeaveRef]);
+
+  // Auto-start game when opponent joins in online mode
+  useEffect(() => {
+    if (isOnline && mp.state.opponentJoined && showLobby) {
+      const timer = setTimeout(() => setShowLobby(false), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [isOnline, mp.state.opponentJoined, showLobby]);
+
   const doMove = useCallback((i: number, aiMove = false) => {
     if (board[i] || winner || isDraw || gameOver) return;
     if (vsAI && !isXTurn && !aiMove) return;
+    if (isOnline && !isMyTurn && !aiMove) return;
     const shield = shieldedCells[i];
     if (shield && shield.player !== currentPlayer) { toast("🛡️ This cell is shielded!"); return; }
     const player = currentPlayer;
@@ -325,10 +377,15 @@ export default function TicTacToe() {
       }
       return updated;
     });
-  }, [board, isXTurn, winner, isDraw, vsAI, currentPlayer, soundEnabled, shieldedCells, gameOver]);
+
+    // Send move to opponent
+    if (isOnline) {
+      mp.sendMove(i, player, next);
+    }
+  }, [board, isXTurn, winner, isDraw, vsAI, isOnline, isMyTurn, currentPlayer, soundEnabled, shieldedCells, gameOver, mp]);
 
   const undoMove = useCallback(() => {
-    if (moveHistory.length === 0 || gameOver) return;
+    if (moveHistory.length === 0 || gameOver || isOnline) return;
     const cost = 10;
     const playerCoins = currentPlayer === "X" ? coinsX : coinsO;
     if (playerCoins < cost) { toast(`Not enough coins (${cost} needed)`); return; }
@@ -341,10 +398,10 @@ export default function TicTacToe() {
     setMoveHistory((h) => h.slice(0, -1));
     setRedoStack((r) => [...r, last]);
     toast("↶ Move undone (-10 coins)");
-  }, [moveHistory, gameOver, currentPlayer, coinsX, coinsO, addCoins, board]);
+  }, [moveHistory, gameOver, currentPlayer, coinsX, coinsO, addCoins, board, isOnline]);
 
   const redoMove = useCallback(() => {
-    if (redoStack.length === 0 || gameOver) return;
+    if (redoStack.length === 0 || gameOver || isOnline) return;
     const cost = 10;
     const playerCoins = currentPlayer === "X" ? coinsX : coinsO;
     if (playerCoins < cost) { toast(`Not enough coins (${cost} needed)`); return; }
@@ -357,9 +414,10 @@ export default function TicTacToe() {
     setRedoStack((r) => r.slice(0, -1));
     setMoveHistory((h) => [...h, move]);
     toast("↷ Move redone (-10 coins)");
-  }, [redoStack, gameOver, currentPlayer, coinsX, coinsO, addCoins, board]);
+  }, [redoStack, gameOver, currentPlayer, coinsX, coinsO, addCoins, board, isOnline]);
 
   const usePeek = () => {
+    if (isOnline) return;
     const cost = POWERUP_COSTS.peek;
     const coins = currentPlayer === "X" ? coinsX : coinsO;
     if (coins < cost) { toast(`Not enough coins (${cost})`); return; }
@@ -370,7 +428,7 @@ export default function TicTacToe() {
   };
 
   const useShield = () => {
-    if (gameOver) return;
+    if (gameOver || isOnline) return;
     toast("🛡️ Click an empty cell to place shield");
     setAwaitingShield(true);
     setTimeout(() => setAwaitingShield(false), 8000);
@@ -391,7 +449,7 @@ export default function TicTacToe() {
     doMove(i);
   }, [awaitingShield, board, currentPlayer, coinsX, coinsO, addCoins, doMove]);
 
-  const reset = () => {
+  const resetBoard = useCallback(() => {
     setBoard(Array(9).fill(null));
     setIsXTurn(true);
     setWinLine(null);
@@ -404,14 +462,91 @@ export default function TicTacToe() {
     setAwaitingShield(false);
     moveCountRef.current = 0;
     setRound((r) => r + 1);
+  }, []);
+
+  const reset = () => {
+    resetBoard();
+    if (isOnline) mp.sendReset();
   };
 
-  const resetAll = () => { reset(); setScore({ X: 0, O: 0, draws: 0 }); setRound(1); };
-  const toggleMode = () => { setVsAI(!vsAI); resetAll(); };
+  const resetAll = () => { resetBoard(); setScore({ X: 0, O: 0, draws: 0 }); setRound(1); };
 
-  const status = winner ? `${getPlayerName(winner)} Wins!` : isDraw ? "It's a Draw!" : `${getPlayerName(currentPlayer)}'s Turn`;
+  const switchMode = (mode: GameMode) => {
+    if (isOnline) mp.leaveRoom();
+    setGameMode(mode);
+    setShowLobby(mode === "online");
+    resetAll();
+  };
+
+  const handleCreateRoom = () => {
+    const code = mp.createRoom();
+    toast(`Room created: ${code}`);
+    return code;
+  };
+
+  const handleJoinRoom = (code: string) => {
+    const normalized = mp.joinRoom(code);
+    toast(`Joining room ${normalized}...`);
+    return normalized;
+  };
+
+  const handleLeaveRoom = () => {
+    mp.leaveRoom();
+    setShowLobby(true);
+    resetAll();
+  };
+
+  const getStatusText = () => {
+    if (winner) return `${getPlayerName(winner)} Wins!`;
+    if (isDraw) return "It's a Draw!";
+    if (isOnline) {
+      return isMyTurn ? "Your Turn" : "Opponent's Turn";
+    }
+    return `${getPlayerName(currentPlayer)}'s Turn`;
+  };
+
+  const status = getStatusText();
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
   const movesMade = board.filter(Boolean).length;
+
+  // Show lobby for online mode
+  if (isOnline && showLobby) {
+    return (
+      <div className="relative flex min-h-screen animated-bg overflow-hidden items-center justify-center">
+        <FloatingParticles />
+        <div className="pointer-events-none absolute inset-0 bg-grid-pattern opacity-30 z-0" />
+        <div className="z-10 flex flex-col items-center gap-6 p-4 w-full">
+          <motion.div className="flex flex-col items-center gap-2" initial={{ y: -40, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+            <div className="flex items-center gap-2">
+              <Swords className="h-5 w-5 text-primary opacity-60" />
+              <h1 className="text-3xl font-black tracking-tighter sm:text-5xl" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                <span className="text-gradient-title">TicTacToe</span>
+              </h1>
+              <Swords className="h-5 w-5 text-accent opacity-60" />
+            </div>
+          </motion.div>
+
+          <MultiplayerLobby
+            onCreateRoom={handleCreateRoom}
+            onJoinRoom={handleJoinRoom}
+            onLeave={() => switchMode("local")}
+            roomCode={mp.state.roomCode}
+            myRole={mp.state.myRole}
+            opponentJoined={mp.state.opponentJoined}
+            connected={mp.state.connected}
+            isHost={mp.state.isHost}
+          />
+
+          <button
+            onClick={() => switchMode("local")}
+            className="text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+          >
+            ← Back to Local Game
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative flex min-h-screen animated-bg overflow-hidden">
@@ -441,21 +576,38 @@ export default function TicTacToe() {
             <span className="flex items-center gap-1"><Target className="h-3 w-3" /> Round {round}</span>
             <span className="flex items-center gap-1"><Timer className="h-3 w-3" /> {formatTime(elapsedTime)}</span>
             <span className="flex items-center gap-1"><Flame className="h-3 w-3 text-streak" /> {stats.winStreak}</span>
+            {isOnline && mp.state.roomCode && (
+              <span className="flex items-center gap-1 text-accent"><Globe className="h-3 w-3" /> {mp.state.roomCode}</span>
+            )}
           </div>
           <XPDisplay totalWins={stats.wins} />
         </motion.div>
 
         {/* Controls row */}
         <motion.div className="flex flex-wrap items-center justify-center gap-2" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
-          <button onClick={toggleMode} className="glass-card flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold text-card-foreground transition-all hover:border-primary/50 active:scale-95">
-            {vsAI ? <Monitor className="h-3.5 w-3.5 text-primary" /> : <Users className="h-3.5 w-3.5 text-accent" />}
-            {vsAI ? "vs AI" : "vs Human"}
-          </button>
+          {/* Mode toggle buttons */}
+          <div className="flex rounded-full overflow-hidden border border-border">
+            <button onClick={() => switchMode("local")}
+              className={`px-3 py-2 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1
+                ${gameMode === "local" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"}`}>
+              <Users className="h-3 w-3" /> Local
+            </button>
+            <button onClick={() => switchMode("ai")}
+              className={`px-3 py-2 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1
+                ${gameMode === "ai" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"}`}>
+              <Monitor className="h-3 w-3" /> AI
+            </button>
+            <button onClick={() => switchMode("online")}
+              className={`px-3 py-2 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1
+                ${gameMode === "online" ? "bg-accent text-accent-foreground" : "bg-card text-muted-foreground hover:text-foreground"}`}>
+              <Globe className="h-3 w-3" /> Online
+            </button>
+          </div>
 
           {vsAI && (
             <motion.div className="flex rounded-full overflow-hidden border border-border" initial={{ width: 0, opacity: 0 }} animate={{ width: "auto", opacity: 1 }}>
               {(["easy", "medium", "hard"] as Difficulty[]).map((d) => (
-                <button key={d} onClick={() => { setDifficulty(d); reset(); }}
+                <button key={d} onClick={() => { setDifficulty(d); resetBoard(); }}
                   className={`px-3 py-2 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1
                     ${d === difficulty ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"}`}>
                   {d === "easy" ? <Zap className="h-3 w-3" /> : d === "medium" ? <Brain className="h-3 w-3" /> : <Sparkles className="h-3 w-3" />}
@@ -474,13 +626,33 @@ export default function TicTacToe() {
           </button>
         </motion.div>
 
+        {/* Online mode: connection indicator */}
+        {isOnline && (
+          <motion.div
+            className="flex items-center gap-2 text-[10px]"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          >
+            <div className={`h-1.5 w-1.5 rounded-full ${mp.state.connected ? "bg-accent" : "bg-destructive"} animate-pulse`} />
+            <span className="text-muted-foreground">
+              {mp.state.connected ? `Playing as ${mp.state.myRole}` : "Connecting..."}
+            </span>
+            {mp.state.roomCode && (
+              <button onClick={handleLeaveRoom} className="text-destructive/60 hover:text-destructive transition-colors ml-2 underline">
+                Leave
+              </button>
+            )}
+          </motion.div>
+        )}
+
         {/* Scoreboard */}
         <motion.div className="glass-card-elevated flex items-stretch rounded-2xl overflow-hidden" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.15, type: "spring" }}>
           {/* Player X */}
           <div className={`flex flex-col items-center px-5 py-3 border-r border-border/30 transition-all ${isXTurn && !gameOver ? "bg-x-color/5" : ""}`}>
             <div className="flex items-center gap-1.5 mb-0.5">
               <motion.div className={`h-2 w-2 rounded-full bg-x-color`} animate={isXTurn && !gameOver ? { scale: [1, 1.5, 1] } : {}} transition={{ duration: 1, repeat: Infinity }} />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{getPlayerName("X")}</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                {isOnline && mp.state.myRole === "X" ? "You (X)" : getPlayerName("X")}
+              </span>
             </div>
             <motion.span key={`x-${score.X}`} className="text-2xl font-black text-gradient-x" style={{ fontFamily: "'JetBrains Mono'" }} initial={{ scale: 1.5, rotate: -10 }} animate={{ scale: 1, rotate: 0 }}>
               {score.X}
@@ -501,7 +673,9 @@ export default function TicTacToe() {
           <div className={`flex flex-col items-center px-5 py-3 transition-all ${!isXTurn && !gameOver ? "bg-o-color/5" : ""}`}>
             <div className="flex items-center gap-1.5 mb-0.5">
               <motion.div className={`h-2 w-2 rounded-full bg-o-color`} animate={!isXTurn && !gameOver ? { scale: [1, 1.5, 1] } : {}} transition={{ duration: 1, repeat: Infinity }} />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{getPlayerName("O")}</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                {isOnline && mp.state.myRole === "O" ? "You (O)" : getPlayerName("O")}
+              </span>
             </div>
             <motion.span key={`o-${score.O}`} className="text-2xl font-black text-gradient-o" style={{ fontFamily: "'JetBrains Mono'" }} initial={{ scale: 1.5, rotate: 10 }} animate={{ scale: 1, rotate: 0 }}>
               {score.O}
@@ -516,7 +690,7 @@ export default function TicTacToe() {
           <AnimatePresence mode="wait">
             <motion.div key={status}
               className={`flex items-center gap-2.5 rounded-2xl px-5 py-2 text-sm font-bold
-                ${winner ? "glass-card-elevated glow-win text-win-highlight" : isDraw ? "glass-card text-muted-foreground" : "text-foreground"}`}
+                ${winner ? "glass-card-elevated glow-win text-win-highlight" : isDraw ? "glass-card text-muted-foreground" : isOnline && !isMyTurn ? "glass-card text-muted-foreground/60" : "text-foreground"}`}
               initial={{ y: -15, opacity: 0, scale: 0.9 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: 15, opacity: 0, scale: 0.9 }}>
               {winner && <Trophy className="h-4 w-4" />}
               {status}
@@ -526,7 +700,8 @@ export default function TicTacToe() {
         </div>
 
         {/* Board */}
-        <motion.div className="glass-card-elevated rounded-3xl p-4 sm:p-5 board-glow" initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, type: "spring", stiffness: 120 }}>
+        <motion.div className={`glass-card-elevated rounded-3xl p-4 sm:p-5 board-glow ${isOnline && !isMyTurn && !gameOver ? "opacity-80" : ""}`}
+          initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, type: "spring", stiffness: 120 }}>
           <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
             {board.map((cell, i) => {
               const isWinCell = winLine?.includes(i);
@@ -534,12 +709,13 @@ export default function TicTacToe() {
               const isShielded = !!shieldedCells[i];
               const row = Math.floor(i / 3);
               const col = i % 3;
+              const canClick = !cell && !winner && !isDraw && !gameOver && (isOnline ? isMyTurn : true);
               return (
                 <motion.button
                   key={i}
                   onClick={() => handleCellClick(i)}
-                  whileHover={!cell && !winner && !isDraw ? { scale: 1.06, y: -2 } : {}}
-                  whileTap={!cell && !winner && !isDraw ? { scale: 0.94 } : {}}
+                  whileHover={canClick ? { scale: 1.06, y: -2 } : {}}
+                  whileTap={canClick ? { scale: 0.94 } : {}}
                   initial={{ opacity: 0, scale: 0.5, y: 20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ delay: row * 0.06 + col * 0.06, type: "spring", stiffness: 200 }}
@@ -554,11 +730,12 @@ export default function TicTacToe() {
                       ? "bg-x-color/6 border-2 border-x-color/15 glow-x"
                       : cell === "O"
                       ? "bg-o-color/6 border-2 border-o-color/15 glow-o"
-                      : "bg-secondary/40 border-2 border-border/40 hover:bg-cell-hover hover:border-primary/30 cursor-pointer"
+                      : canClick
+                      ? "bg-secondary/40 border-2 border-border/40 hover:bg-cell-hover hover:border-primary/30 cursor-pointer"
+                      : "bg-secondary/40 border-2 border-border/40 cursor-default opacity-60"
                     }
-                    ${cell || winner || isDraw ? "cursor-default" : ""}
                   `}
-                  disabled={!!cell || !!winner || isDraw}
+                  disabled={!canClick}
                 >
                   <AnimatePresence>
                     {cell === "X" && <XMark isWin={!!isWinCell} />}
@@ -576,45 +753,59 @@ export default function TicTacToe() {
           </div>
         </motion.div>
 
-        {/* Power-ups row */}
-        <motion.div className="flex flex-wrap gap-2 justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
-          <button onClick={usePeek} disabled={gameOver}
-            className="glass-card flex items-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all active:scale-95 disabled:opacity-30">
-            <Eye className="h-3.5 w-3.5 text-gold" /> Peek
-            <span className="text-[9px] text-muted-foreground/70 ml-0.5">{POWERUP_COSTS.peek}🪙</span>
-          </button>
-          <button onClick={useShield} disabled={gameOver}
-            className="glass-card flex items-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all active:scale-95 disabled:opacity-30">
-            <Shield className="h-3.5 w-3.5 text-primary" /> Shield
-            <span className="text-[9px] text-muted-foreground/70 ml-0.5">{POWERUP_COSTS.shield}🪙</span>
-          </button>
-        </motion.div>
+        {/* Power-ups row — hidden in online mode */}
+        {!isOnline && (
+          <motion.div className="flex flex-wrap gap-2 justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+            <button onClick={usePeek} disabled={gameOver}
+              className="glass-card flex items-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all active:scale-95 disabled:opacity-30">
+              <Eye className="h-3.5 w-3.5 text-gold" /> Peek
+              <span className="text-[9px] text-muted-foreground/70 ml-0.5">{POWERUP_COSTS.peek}🪙</span>
+            </button>
+            <button onClick={useShield} disabled={gameOver}
+              className="glass-card flex items-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all active:scale-95 disabled:opacity-30">
+              <Shield className="h-3.5 w-3.5 text-primary" /> Shield
+              <span className="text-[9px] text-muted-foreground/70 ml-0.5">{POWERUP_COSTS.shield}🪙</span>
+            </button>
+          </motion.div>
+        )}
 
         {/* Action buttons */}
         <motion.div className="flex items-center gap-2.5" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.35 }}>
-          <button onClick={undoMove} disabled={moveHistory.length === 0 || gameOver}
-            className="glass-card flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-all active:scale-95 disabled:opacity-25">
-            <Undo2 className="h-3.5 w-3.5" /> Undo
-          </button>
+          {!isOnline && (
+            <button onClick={undoMove} disabled={moveHistory.length === 0 || gameOver}
+              className="glass-card flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-all active:scale-95 disabled:opacity-25">
+              <Undo2 className="h-3.5 w-3.5" /> Undo
+            </button>
+          )}
           <button onClick={reset}
             className="flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground glow-primary transition-all hover:brightness-110 active:scale-95">
             <RotateCcw className="h-4 w-4" /> Play Again
           </button>
-          <button onClick={redoMove} disabled={redoStack.length === 0 || gameOver}
-            className="glass-card flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-all active:scale-95 disabled:opacity-25">
-            <Redo2 className="h-3.5 w-3.5" /> Redo
-          </button>
+          {!isOnline && (
+            <button onClick={redoMove} disabled={redoStack.length === 0 || gameOver}
+              className="glass-card flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-all active:scale-95 disabled:opacity-25">
+              <Redo2 className="h-3.5 w-3.5" /> Redo
+            </button>
+          )}
         </motion.div>
 
-        <button onClick={resetAll} className="text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors">
-          Reset Everything
-        </button>
+        {!isOnline && (
+          <button onClick={resetAll} className="text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors">
+            Reset Everything
+          </button>
+        )}
+
+        {isOnline && (
+          <button onClick={handleLeaveRoom} className="text-[10px] text-destructive/50 hover:text-destructive transition-colors">
+            Leave Room
+          </button>
+        )}
       </div>
 
       {/* Desktop sidebar */}
       <div className="hidden lg:block w-[280px] border-l border-border/30 bg-card/20 backdrop-blur-sm p-4 overflow-y-auto max-h-screen z-10">
         <Sidebar coinsX={coinsX} coinsO={coinsO} boardTheme={boardTheme} setBoardTheme={setBoardTheme}
-          difficulty={difficulty} setDifficulty={(d) => { setDifficulty(d); reset(); }}
+          difficulty={difficulty} setDifficulty={(d) => { setDifficulty(d); resetBoard(); }}
           soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled}
           onResetCoins={() => { resetCoinsStorage(); setCoinsX(0); setCoinsO(0); refreshSidebar(); toast("Coins reset"); }}
           vsAI={vsAI} refreshKey={refreshKey} />
@@ -631,7 +822,7 @@ export default function TicTacToe() {
             </button>
             <div className="mt-8">
               <Sidebar coinsX={coinsX} coinsO={coinsO} boardTheme={boardTheme} setBoardTheme={setBoardTheme}
-                difficulty={difficulty} setDifficulty={(d) => { setDifficulty(d); reset(); }}
+                difficulty={difficulty} setDifficulty={(d) => { setDifficulty(d); resetBoard(); }}
                 soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled}
                 onResetCoins={() => { resetCoinsStorage(); setCoinsX(0); setCoinsO(0); refreshSidebar(); toast("Coins reset"); }}
                 vsAI={vsAI} refreshKey={refreshKey} />
