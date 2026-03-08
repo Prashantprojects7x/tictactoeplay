@@ -148,6 +148,8 @@ export default function Splash() {
         <motion.img
           src={gameLogo}
           alt="TicTacToe"
+          width={180}
+          height={180}
           className="relative z-10 rounded-[2rem]"
           style={{ width: 180, height: 180 }}
           initial={{ scale: 0, rotate: -30, opacity: 0 }}
