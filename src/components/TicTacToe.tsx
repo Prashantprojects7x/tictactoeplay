@@ -393,6 +393,12 @@ export default function TicTacToe() {
         recordWin(elapsed);
       }
 
+      // Play appropriate sound based on outcome
+      if (soundEnabled) {
+        if (outcome === "loss") playSound("loss", 0.1);
+        else playSound("win", 0.1);
+      }
+
       if (shouldAwardCoins) {
         addCoinsToProfile(10);
         addCoins(winner, 10);
