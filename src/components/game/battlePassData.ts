@@ -32,5 +32,5 @@ export const BATTLE_PASS_TIERS: BattlePassTier[] = [
   { tier: 17, reward: "400 Coins", type: "coins", value: 400, icon: "💰", rarity: "rare" },
   { tier: 18, reward: "Unicorn Avatar", type: "avatar", value: "🦄", icon: "🦄", rarity: "legendary" },
   { tier: 19, reward: "750 Coins", type: "coins", value: 750, icon: "💎", rarity: "legendary" },
-  { tier: 20, reward: "Diamond Avatar", type: "avatar", value: "💠", icon: "💠", rarity: "legendary" },
+  { tier: 20, reward: "💠 Diamond Token — Free Tournament", type: "diamond_token", value: 1, icon: "💠", rarity: "legendary" },
 ];
