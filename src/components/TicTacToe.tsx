@@ -185,6 +185,8 @@ export default function TicTacToe() {
   const { user, signOut } = useAuth();
   const { syncGameResult } = useProfileSync();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const challenges = useChallenges();
   const [board, setBoard] = useState<Player[]>(Array(9).fill(null));
   const [isXTurn, setIsXTurn] = useState(true);
   const [winLine, setWinLine] = useState<number[] | null>(null);
@@ -218,6 +220,27 @@ export default function TicTacToe() {
   // Multiplayer
   const mp = useMultiplayer();
   const [showLobby, setShowLobby] = useState(false);
+
+  // Handle URL-based challenge/join
+  useEffect(() => {
+    const joinCode = searchParams.get("join");
+    const challengeUserId = searchParams.get("challenge");
+    if (joinCode) {
+      setGameMode("online");
+      setShowLobby(false);
+      mp.joinRoom(joinCode);
+      setSearchParams({}, { replace: true });
+      toast("⚔️ Joining challenge match...");
+    } else if (challengeUserId && user) {
+      // Create room and send challenge
+      const code = mp.createRoom();
+      setGameMode("online");
+      setShowLobby(false);
+      challenges.sendChallenge(challengeUserId, code);
+      setSearchParams({}, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const vsAI = gameMode === "ai";
   const isOnline = gameMode === "online";
