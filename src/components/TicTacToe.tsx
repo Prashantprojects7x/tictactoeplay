@@ -24,6 +24,7 @@ import { useChallenges } from "@/hooks/useChallenges";
 import { useBattlePass } from "@/hooks/useBattlePass";
 import ChallengeNotification from "./game/ChallengeNotification";
 import { calculateXpGain, processXpGain, getLevelTitle, xpForLevel } from "./game/progression";
+import GameChat, { type ChatMessage } from "./game/GameChat";
 
 // ─── Confetti ──────────────────────────────────────────────────
 function Confetti() {
@@ -222,6 +223,21 @@ export default function TicTacToe() {
   // Multiplayer
   const mp = useMultiplayer();
   const [showLobby, setShowLobby] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+
+  // Listen for incoming chat messages
+  useEffect(() => {
+    mp.onChatRef.current = (text: string, id: string, isEmoji: boolean) => {
+      setChatMessages((prev) => [...prev, { id, text, sender: "opponent", timestamp: Date.now(), isEmoji }]);
+    };
+  }, [mp.onChatRef]);
+
+  const handleSendChat = useCallback((text: string) => {
+    const isEmoji = /^\p{Emoji}$/u.test(text);
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    setChatMessages((prev) => [...prev, { id, text, sender: "me", timestamp: Date.now(), isEmoji }]);
+    mp.sendChat(text, id, isEmoji);
+  }, [mp]);
 
   // Handle URL-based challenge/join
   useEffect(() => {
@@ -924,6 +940,11 @@ export default function TicTacToe() {
           <button onClick={handleLeaveRoom} className="text-[10px] text-destructive/50 hover:text-destructive transition-colors">
             Leave Room
           </button>
+        )}
+
+        {/* In-game chat (online only) */}
+        {isOnline && mp.state.connected && (
+          <GameChat messages={chatMessages} onSend={handleSendChat} myRole={mp.state.myRole} />
         )}
       </div>
 

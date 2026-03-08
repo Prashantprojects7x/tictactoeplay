@@ -15,7 +15,8 @@ type BroadcastPayload =
   | { type: "move"; index: number; player: "X" | "O"; board: Player[] }
   | { type: "join"; role: "O" }
   | { type: "reset" }
-  | { type: "leave" };
+  | { type: "leave" }
+  | { type: "chat"; text: string; id: string; isEmoji: boolean };
 
 function generateRoomCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -38,6 +39,7 @@ export function useMultiplayer() {
   const onResetRef = useRef<(() => void) | null>(null);
   const onOpponentJoinRef = useRef<(() => void) | null>(null);
   const onOpponentLeaveRef = useRef<(() => void) | null>(null);
+  const onChatRef = useRef<((text: string, id: string, isEmoji: boolean) => void) | null>(null);
 
   const cleanup = useCallback(() => {
     if (channelRef.current) {
@@ -74,6 +76,9 @@ export function useMultiplayer() {
         case "leave":
           setState((s) => ({ ...s, opponentJoined: false }));
           onOpponentLeaveRef.current?.();
+          break;
+        case "chat":
+          onChatRef.current?.(payload.text, payload.id, payload.isEmoji);
           break;
       }
     });
@@ -139,6 +144,14 @@ export function useMultiplayer() {
     });
   }, []);
 
+  const sendChat = useCallback((text: string, id: string, isEmoji: boolean) => {
+    channelRef.current?.send({
+      type: "broadcast",
+      event: "game",
+      payload: { type: "chat", text, id, isEmoji },
+    });
+  }, []);
+
   const leaveRoom = useCallback(() => {
     cleanup();
   }, [cleanup]);
@@ -159,10 +172,12 @@ export function useMultiplayer() {
     joinRoom,
     sendMove,
     sendReset,
+    sendChat,
     leaveRoom,
     onMoveRef,
     onResetRef,
     onOpponentJoinRef,
     onOpponentLeaveRef,
+    onChatRef,
   };
 }
