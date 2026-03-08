@@ -211,6 +211,11 @@ export default function TicTacToe() {
   const [gameOver, setGameOver] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [sfxVolume, setSfxVolume] = useState(() => {
+    const saved = localStorage.getItem("sfx-volume");
+    return saved !== null ? parseFloat(saved) : 0.5;
+  });
+  const music = useBackgroundMusic();
   const [round, setRound] = useState(1);
   const [boardTheme, setBoardTheme] = useState<BoardTheme>("default");
   const [sidebarOpen, setSidebarOpen] = useState(false);
