@@ -943,6 +943,12 @@ export default function TicTacToe() {
         )}
       </div>
 
+      {/* In-game chat (online only) */}
+      {isOnline && mp.state.connected && (
+        <GameChat messages={chatMessages} onSend={handleSendChat} myRole={mp.state.myRole} />
+      )}
+      </div>
+
       {/* Desktop sidebar — hidden in fullscreen */}
       {!isFullscreen && (
         <div className="hidden lg:block w-[280px] border-l border-border/30 bg-card/20 backdrop-blur-sm p-4 overflow-y-auto max-h-screen z-10">
