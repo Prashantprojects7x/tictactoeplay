@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   RotateCcw, Monitor, Users, Trophy, Zap, Brain, Sparkles,
   Volume2, VolumeX, Undo2, Redo2, Eye, Shield, Timer, Menu, X,
-  Crown, Flame, Target, Swords, Globe,
+  Crown, Flame, Target, Swords, Globe, LogIn, LogOut, User,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import type { Player, Difficulty, BoardTheme, MoveRecord } from "./game/types";
 import { BOARD_THEMES, POWERUP_COSTS, ACHIEVEMENT_DEFS } from "./game/types";
 import { checkWinner, getAIMove, findBestMoveForPlayer, playSound } from "./game/engine";
@@ -17,6 +18,7 @@ import {
 import Sidebar from "./game/Sidebar";
 import { useMultiplayer } from "./game/useMultiplayer";
 import MultiplayerLobby from "./game/MultiplayerLobby";
+import { useAuth } from "@/contexts/AuthContext";
 
 // ─── Confetti ──────────────────────────────────────────────────
 function Confetti() {
@@ -176,6 +178,8 @@ type GameMode = "local" | "ai" | "online";
 
 // ─── Main Component ─────────────────────────────────────────────
 export default function TicTacToe() {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [board, setBoard] = useState<Player[]>(Array(9).fill(null));
   const [isXTurn, setIsXTurn] = useState(true);
   const [winLine, setWinLine] = useState<number[] | null>(null);
@@ -620,6 +624,20 @@ export default function TicTacToe() {
           <button onClick={() => setSoundEnabled(!soundEnabled)} className="glass-card rounded-full p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all">
             {soundEnabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
           </button>
+
+          {user ? (
+            <button onClick={async () => { await signOut(); toast("Signed out"); }}
+              className="glass-card flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all">
+              <User className="h-3.5 w-3.5 text-accent" />
+              <span className="hidden sm:inline max-w-[80px] truncate">{user.email?.split("@")[0]}</span>
+              <LogOut className="h-3 w-3 opacity-50" />
+            </button>
+          ) : (
+            <button onClick={() => navigate("/auth")}
+              className="glass-card flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all">
+              <LogIn className="h-3.5 w-3.5 text-primary" /> Sign In
+            </button>
+          )}
 
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="glass-card rounded-full p-2 text-muted-foreground hover:text-foreground active:scale-95 lg:hidden transition-all">
             {sidebarOpen ? <X className="h-3.5 w-3.5" /> : <Menu className="h-3.5 w-3.5" />}

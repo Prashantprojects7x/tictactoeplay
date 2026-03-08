@@ -14,7 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          best_time: number | null
+          coins: number
+          created_at: string
+          display_name: string | null
+          id: string
+          max_streak: number
+          total_games: number
+          total_wins: number
+          updated_at: string
+          user_id: string
+          win_streak: number
+        }
+        Insert: {
+          avatar_url?: string | null
+          best_time?: number | null
+          coins?: number
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          max_streak?: number
+          total_games?: number
+          total_wins?: number
+          updated_at?: string
+          user_id: string
+          win_streak?: number
+        }
+        Update: {
+          avatar_url?: string | null
+          best_time?: number | null
+          coins?: number
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          max_streak?: number
+          total_games?: number
+          total_wins?: number
+          updated_at?: string
+          user_id?: string
+          win_streak?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
