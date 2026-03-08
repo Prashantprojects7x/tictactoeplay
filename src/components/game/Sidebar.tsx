@@ -19,14 +19,13 @@ interface SidebarProps {
   setDifficulty: (d: Difficulty) => void;
   soundEnabled: boolean;
   setSoundEnabled: (v: boolean) => void;
-  onResetCoins: () => void;
   vsAI: boolean;
   refreshKey: number;
 }
 
 export default function Sidebar({
   coinsX, coinsO, boardTheme, setBoardTheme, difficulty, setDifficulty,
-  soundEnabled, setSoundEnabled, onResetCoins, vsAI, refreshKey,
+  soundEnabled, setSoundEnabled, vsAI, refreshKey,
 }: SidebarProps) {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     stats: true, achievements: true, history: false, coins: false, settings: false, names: false,
@@ -114,10 +113,6 @@ export default function Sidebar({
               <span className="text-sm font-bold text-o-color" style={{ fontFamily: "'JetBrains Mono'" }}>{coinsO}</span>
             </div>
           </div>
-          <button onClick={onResetCoins}
-            className="w-full text-[10px] py-1.5 rounded-lg border border-border/50 text-muted-foreground hover:text-destructive hover:border-destructive/30 transition-all">
-            Reset Coins
-          </button>
           {coinHistory.length > 0 && (
             <div className="max-h-20 overflow-y-auto rounded-lg bg-secondary/30 p-2 space-y-0.5">
               {coinHistory.slice(-6).reverse().map((c, i) => (
