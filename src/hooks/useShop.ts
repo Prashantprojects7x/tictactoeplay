@@ -46,7 +46,7 @@ export function useShop() {
     if (coins < price) { toast("Not enough coins!"); return false; }
 
     const { data, error } = await supabase.functions.invoke("economy", {
-      body: { action: "purchase_item", item_id: itemId, item_type: itemType, price },
+      body: { action: "purchase_item", item_id: itemId },
     });
 
     if (error || data?.error) {
