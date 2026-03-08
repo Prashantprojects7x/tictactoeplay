@@ -471,7 +471,7 @@ export default function TicTacToe() {
       moveCountRef.current += 1;
       setMoveHistory((h) => [...h, { index, player, moveNumber: moveCountRef.current, timestamp: Date.now() }]);
       setRedoStack([]);
-      if (soundEnabled) playSound("place", 0.08);
+      if (soundEnabled) playSound("place", sfxVol);
     };
     mp.onResetRef.current = () => {
       resetBoard();
