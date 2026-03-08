@@ -6,6 +6,8 @@ import {
   Volume2, VolumeX, Undo2, Redo2, Eye, Shield, Timer, Menu, X,
   Crown, Flame, Target, Swords, Globe, LogIn, LogOut, User, Maximize, Minimize, ShoppingBag, UserPlus,
 } from "lucide-react";
+import SettingsMenu from "./game/SettingsMenu";
+import { useBackgroundMusic } from "@/hooks/useBackgroundMusic";
 import { toast } from "sonner";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import type { Player, Difficulty, BoardTheme, MoveRecord } from "./game/types";
