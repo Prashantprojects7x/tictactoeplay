@@ -858,14 +858,16 @@ export default function TicTacToe() {
         )}
       </div>
 
-      {/* Desktop sidebar */}
-      <div className="hidden lg:block w-[280px] border-l border-border/30 bg-card/20 backdrop-blur-sm p-4 overflow-y-auto max-h-screen z-10">
-        <Sidebar coinsX={coinsX} coinsO={coinsO} boardTheme={boardTheme} setBoardTheme={setBoardTheme}
-          difficulty={difficulty} setDifficulty={(d) => { setDifficulty(d); resetBoard(); }}
-          soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled}
-          onResetCoins={() => { resetCoinsStorage(); setCoinsX(0); setCoinsO(0); refreshSidebar(); toast("Coins reset"); }}
-          vsAI={vsAI} refreshKey={refreshKey} />
-      </div>
+      {/* Desktop sidebar — hidden in fullscreen */}
+      {!isFullscreen && (
+        <div className="hidden lg:block w-[280px] border-l border-border/30 bg-card/20 backdrop-blur-sm p-4 overflow-y-auto max-h-screen z-10">
+          <Sidebar coinsX={coinsX} coinsO={coinsO} boardTheme={boardTheme} setBoardTheme={setBoardTheme}
+            difficulty={difficulty} setDifficulty={(d) => { setDifficulty(d); resetBoard(); }}
+            soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled}
+            onResetCoins={() => { resetCoinsStorage(); setCoinsX(0); setCoinsO(0); refreshSidebar(); toast("Coins reset"); }}
+            vsAI={vsAI} refreshKey={refreshKey} />
+        </div>
+      )}
 
       {/* Mobile sidebar overlay */}
       <AnimatePresence>
