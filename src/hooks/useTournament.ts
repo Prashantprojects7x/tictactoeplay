@@ -177,15 +177,18 @@ export function useTournament() {
   // Create tournament — deduct coins via edge function
   const createTournament = useCallback(async (name: string, entryFee: number) => {
     if (!user) { toast("Sign in first"); return null; }
-    if (userCoins < entryFee) { toast("Not enough coins!"); return null; }
 
-    // Deduct entry fee server-side
-    const { data: deductResult, error: deductErr } = await supabase.functions.invoke("economy", {
-      body: { action: "deduct_coins", amount: entryFee },
-    });
-    if (deductErr || deductResult?.error) {
-      toast(deductResult?.error || "Failed to deduct coins");
-      return null;
+    // Only deduct coins if there's an entry fee
+    if (entryFee > 0) {
+      if (userCoins < entryFee) { toast("Not enough coins!"); return null; }
+
+      const { data: deductResult, error: deductErr } = await supabase.functions.invoke("economy", {
+        body: { action: "deduct_coins", amount: entryFee },
+      });
+      if (deductErr || deductResult?.error) {
+        toast(deductResult?.error || "Failed to deduct coins");
+        return null;
+      }
     }
 
     const { data, error } = await supabase
