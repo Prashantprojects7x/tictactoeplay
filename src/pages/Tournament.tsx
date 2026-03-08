@@ -80,14 +80,51 @@ export default function Tournament() {
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [newFee, setNewFee] = useState(50);
+  const [useDiamond, setUseDiamond] = useState(false);
+  const [diamondTokens, setDiamondTokens] = useState(0);
+
+  // Fetch diamond tokens
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("diamond_tokens")
+      .eq("user_id", user.id)
+      .single()
+      .then(({ data }) => {
+        if (data) setDiamondTokens((data as any).diamond_tokens ?? 0);
+      });
+  }, [user]);
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
-    const id = await createTournament(newName.trim(), newFee);
-    if (id) {
-      setShowCreate(false);
-      setNewName("");
-      fetchTournamentDetails(id);
+
+    if (useDiamond && diamondTokens > 0) {
+      // Use diamond token for free tournament
+      const { data, error } = await supabase.functions.invoke("economy", {
+        body: { action: "use_diamond_token" },
+      });
+      if (error || data?.error) {
+        const { toast } = await import("sonner");
+        toast(data?.error || "Failed to use diamond token");
+        return;
+      }
+      setDiamondTokens((d) => d - 1);
+      // Create tournament with 0 entry fee
+      const id = await createTournament(newName.trim(), 0);
+      if (id) {
+        setShowCreate(false);
+        setNewName("");
+        setUseDiamond(false);
+        fetchTournamentDetails(id);
+      }
+    } else {
+      const id = await createTournament(newName.trim(), newFee);
+      if (id) {
+        setShowCreate(false);
+        setNewName("");
+        fetchTournamentDetails(id);
+      }
     }
   };
 
