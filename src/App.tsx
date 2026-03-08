@@ -27,7 +27,7 @@ function AppRoutes() {
     return <Navigate to="/splash" replace />;
   }
 
-  return <AnimatedRoutes />;
+  return <main><AnimatedRoutes /></main>;
 }
 
 const App = () => (
