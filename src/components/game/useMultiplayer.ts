@@ -15,7 +15,8 @@ type BroadcastPayload =
   | { type: "move"; index: number; player: "X" | "O"; board: Player[] }
   | { type: "join"; role: "O" }
   | { type: "reset" }
-  | { type: "leave" };
+  | { type: "leave" }
+  | { type: "chat"; text: string; id: string; isEmoji: boolean };
 
 function generateRoomCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
