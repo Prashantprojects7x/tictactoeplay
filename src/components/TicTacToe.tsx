@@ -28,6 +28,7 @@ import { useBattlePass } from "@/hooks/useBattlePass";
 import ChallengeNotification from "./game/ChallengeNotification";
 import { calculateXpGain, processXpGain, getLevelTitle, xpForLevel } from "./game/progression";
 import GameChat, { type ChatMessage } from "./game/GameChat";
+import { EmoteBar, EmoteOverlay, useEmoteSystem } from "./game/EmoteReactions";
 
 // ─── Confetti ──────────────────────────────────────────────────
 function Confetti() {
@@ -253,13 +254,19 @@ export default function TicTacToe() {
   const mp = useMultiplayer();
   const [showLobby, setShowLobby] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const emoteSystem = useEmoteSystem();
+  const [emoteCooldown, setEmoteCooldown] = useState(false);
 
   // Listen for incoming chat messages
   useEffect(() => {
     mp.onChatRef.current = (text: string, id: string, isEmoji: boolean) => {
       setChatMessages((prev) => [...prev, { id, text, sender: "opponent", timestamp: Date.now(), isEmoji }]);
+      // Show floating emote for opponent emoji messages
+      if (isEmoji) {
+        emoteSystem.showEmote(text);
+      }
     };
-  }, [mp.onChatRef]);
+  }, [mp.onChatRef, emoteSystem.showEmote]);
 
   const handleSendChat = useCallback((text: string) => {
     const isEmoji = /^\p{Emoji}$/u.test(text);
@@ -267,6 +274,16 @@ export default function TicTacToe() {
     setChatMessages((prev) => [...prev, { id, text, sender: "me", timestamp: Date.now(), isEmoji }]);
     mp.sendChat(text, id, isEmoji);
   }, [mp]);
+
+  const handleSendEmote = useCallback((emoji: string) => {
+    if (emoteCooldown) return;
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    setChatMessages((prev) => [...prev, { id, text: emoji, sender: "me", timestamp: Date.now(), isEmoji: true }]);
+    mp.sendChat(emoji, id, true);
+    emoteSystem.showEmote(emoji);
+    setEmoteCooldown(true);
+    setTimeout(() => setEmoteCooldown(false), 1500);
+  }, [mp, emoteCooldown, emoteSystem]);
 
   // Tournament match tracking
   const tournamentIdRef = useRef<string | null>(null);
@@ -1069,10 +1086,20 @@ export default function TicTacToe() {
           </button>
         )}
 
+        {/* Emote bar (online only) */}
+        {isOnline && mp.state.connected && (
+          <div className="flex justify-center mt-2">
+            <EmoteBar onSendEmote={handleSendEmote} disabled={emoteCooldown} />
+          </div>
+        )}
+
         {/* In-game chat (online only) */}
         {isOnline && mp.state.connected && (
           <GameChat messages={chatMessages} onSend={handleSendChat} myRole={mp.state.myRole} />
         )}
+
+        {/* Floating emote overlay */}
+        <EmoteOverlay emotes={emoteSystem.floatingEmotes} />
       </div>
 
       {/* Desktop sidebar — hidden in fullscreen */}
