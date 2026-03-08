@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Trophy, Users, Coins, Swords, Crown, Plus,
-  ChevronRight, Zap, Shield, Clock, Sparkles,
+  ChevronRight, Zap, Shield, Clock, Sparkles, Gem,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTournament } from "@/hooks/useTournament";
+import { supabase } from "@/integrations/supabase/client";
 import type { TournamentMatch } from "@/hooks/useTournament";
 
 // ─── Bracket Match Card ──────────────────────────────────────
@@ -79,14 +80,51 @@ export default function Tournament() {
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [newFee, setNewFee] = useState(50);
+  const [useDiamond, setUseDiamond] = useState(false);
+  const [diamondTokens, setDiamondTokens] = useState(0);
+
+  // Fetch diamond tokens
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("diamond_tokens")
+      .eq("user_id", user.id)
+      .single()
+      .then(({ data }) => {
+        if (data) setDiamondTokens((data as any).diamond_tokens ?? 0);
+      });
+  }, [user]);
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
-    const id = await createTournament(newName.trim(), newFee);
-    if (id) {
-      setShowCreate(false);
-      setNewName("");
-      fetchTournamentDetails(id);
+
+    if (useDiamond && diamondTokens > 0) {
+      // Use diamond token for free tournament
+      const { data, error } = await supabase.functions.invoke("economy", {
+        body: { action: "use_diamond_token" },
+      });
+      if (error || data?.error) {
+        const { toast } = await import("sonner");
+        toast(data?.error || "Failed to use diamond token");
+        return;
+      }
+      setDiamondTokens((d) => d - 1);
+      // Create tournament with 0 entry fee
+      const id = await createTournament(newName.trim(), 0);
+      if (id) {
+        setShowCreate(false);
+        setNewName("");
+        setUseDiamond(false);
+        fetchTournamentDetails(id);
+      }
+    } else {
+      const id = await createTournament(newName.trim(), newFee);
+      if (id) {
+        setShowCreate(false);
+        setNewName("");
+        fetchTournamentDetails(id);
+      }
     }
   };
 
@@ -295,40 +333,79 @@ export default function Tournament() {
                         className="w-full bg-secondary/50 border border-border/50 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary/50 transition-colors"
                         maxLength={40}
                       />
-                      <div>
-                        <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 block">Entry Fee (coins)</label>
-                        <div className="flex gap-2">
-                          {[25, 50, 100, 200].map((fee) => (
-                            <button
-                              key={fee}
-                              onClick={() => setNewFee(fee)}
-                              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
-                                newFee === fee
-                                  ? "bg-primary text-primary-foreground"
-                                  : "bg-secondary text-muted-foreground hover:text-foreground"
-                              }`}
-                            >
-                              {fee} 🪙
-                            </button>
-                          ))}
+                      {/* Diamond Token Option */}
+                      {diamondTokens > 0 && (
+                        <button
+                          onClick={() => setUseDiamond(!useDiamond)}
+                          className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${
+                            useDiamond
+                              ? "border-amber-500/60 bg-amber-500/10 shadow-lg shadow-amber-500/10"
+                              : "border-border/30 bg-secondary/20 hover:border-amber-500/30"
+                          }`}
+                        >
+                          <Gem className={`w-5 h-5 ${useDiamond ? "text-amber-400" : "text-muted-foreground"}`} />
+                          <div className="text-left flex-1">
+                            <p className={`text-xs font-bold ${useDiamond ? "text-amber-400" : "text-foreground"}`}>
+                              💠 Use Diamond Token — FREE Entry
+                            </p>
+                            <p className="text-[10px] text-muted-foreground">
+                              You have {diamondTokens} token{diamondTokens !== 1 ? "s" : ""} (from Battle Pass Tier 20)
+                            </p>
+                          </div>
+                          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                            useDiamond ? "border-amber-400 bg-amber-400" : "border-muted-foreground/40"
+                          }`}>
+                            {useDiamond && <span className="text-[8px] text-background font-bold">✓</span>}
+                          </div>
+                        </button>
+                      )}
+
+                      {/* Entry Fee (hidden when using diamond) */}
+                      {!useDiamond && (
+                        <div>
+                          <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 block">Entry Fee (coins)</label>
+                          <div className="flex gap-2">
+                            {[25, 50, 100, 200].map((fee) => (
+                              <button
+                                key={fee}
+                                onClick={() => setNewFee(fee)}
+                                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+                                  newFee === fee
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-secondary text-muted-foreground hover:text-foreground"
+                                }`}
+                              >
+                                {fee} 🪙
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
+
                       <div className="bg-secondary/30 rounded-xl p-3 text-xs text-muted-foreground">
-                        <p>Prize pool: <span className="text-[hsl(var(--gold))] font-bold">{newFee * 8} coins</span> (8 players × {newFee})</p>
+                        {useDiamond ? (
+                          <p>💠 <span className="text-amber-400 font-bold">Free tournament</span> — No entry fee for any player!</p>
+                        ) : (
+                          <p>Prize pool: <span className="text-[hsl(var(--gold))] font-bold">{newFee * 8} coins</span> (8 players × {newFee})</p>
+                        )}
                       </div>
                       <div className="flex gap-2">
                         <button
-                          onClick={() => setShowCreate(false)}
+                          onClick={() => { setShowCreate(false); setUseDiamond(false); }}
                           className="flex-1 bg-secondary text-secondary-foreground rounded-xl py-2.5 text-sm font-semibold hover:bg-secondary/80 transition-all"
                         >
                           Cancel
                         </button>
                         <button
                           onClick={handleCreate}
-                          disabled={!newName.trim() || userCoins < newFee}
-                          className="flex-1 bg-primary text-primary-foreground rounded-xl py-2.5 text-sm font-bold hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
+                          disabled={!newName.trim() || (!useDiamond && userCoins < newFee)}
+                          className={`flex-1 rounded-xl py-2.5 text-sm font-bold hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 ${
+                            useDiamond
+                              ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white"
+                              : "bg-primary text-primary-foreground"
+                          }`}
                         >
-                          Create ({newFee} 🪙)
+                          {useDiamond ? "Create 💠 Free" : `Create (${newFee} 🪙)`}
                         </button>
                       </div>
                     </div>

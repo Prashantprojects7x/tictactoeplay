@@ -104,6 +104,7 @@ export type Database = {
           best_time: number | null
           coins: number
           created_at: string
+          diamond_tokens: number
           display_name: string | null
           friend_code: string | null
           id: string
@@ -121,6 +122,7 @@ export type Database = {
           best_time?: number | null
           coins?: number
           created_at?: string
+          diamond_tokens?: number
           display_name?: string | null
           friend_code?: string | null
           id?: string
@@ -138,6 +140,7 @@ export type Database = {
           best_time?: number | null
           coins?: number
           created_at?: string
+          diamond_tokens?: number
           display_name?: string | null
           friend_code?: string | null
           id?: string

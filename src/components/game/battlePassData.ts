@@ -6,7 +6,7 @@ export const TOTAL_TIERS = 20;
 export interface BattlePassTier {
   tier: number;
   reward: string;
-  type: "coins" | "avatar" | "theme" | "title" | "xp_boost";
+  type: "coins" | "avatar" | "theme" | "title" | "xp_boost" | "diamond_token";
   value: string | number;
   icon: string;
   rarity: "common" | "rare" | "epic" | "legendary";
@@ -32,5 +32,5 @@ export const BATTLE_PASS_TIERS: BattlePassTier[] = [
   { tier: 17, reward: "400 Coins", type: "coins", value: 400, icon: "💰", rarity: "rare" },
   { tier: 18, reward: "Unicorn Avatar", type: "avatar", value: "🦄", icon: "🦄", rarity: "legendary" },
   { tier: 19, reward: "750 Coins", type: "coins", value: 750, icon: "💎", rarity: "legendary" },
-  { tier: 20, reward: "Diamond Avatar", type: "avatar", value: "💠", icon: "💠", rarity: "legendary" },
+  { tier: 20, reward: "💠 Diamond Token — Free Tournament", type: "diamond_token", value: 1, icon: "💠", rarity: "legendary" },
 ];

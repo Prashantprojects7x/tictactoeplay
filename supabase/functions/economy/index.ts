@@ -32,6 +32,7 @@ const TOTAL_TIERS = 20;
 const COIN_TIERS: Record<number, number> = {
   1: 50, 3: 100, 5: 200, 7: 150, 9: 300, 11: 100, 13: 250, 15: 500, 17: 400, 19: 750,
 };
+const DIAMOND_TOKEN_TIER = 20; // Tier 20 grants a diamond token for free tournament creation
 
 function getAdminClient() {
   return createClient(
@@ -205,11 +206,13 @@ Deno.serve(async (req) => {
         let newXp = (bp.xp_progress ?? 0) + xp_amount;
         let newTier = bp.current_tier ?? 0;
         let coinsToAdd = 0;
+        let diamondTokensToAdd = 0;
 
         while (newTier < TOTAL_TIERS && newXp >= XP_PER_TIER) {
           newXp -= XP_PER_TIER;
           newTier += 1;
           if (COIN_TIERS[newTier]) coinsToAdd += COIN_TIERS[newTier];
+          if (newTier === DIAMOND_TOKEN_TIER) diamondTokensToAdd += 1;
         }
         if (newTier >= TOTAL_TIERS) newXp = 0;
 
@@ -219,12 +222,18 @@ Deno.serve(async (req) => {
           .eq("user_id", userId)
           .eq("season", BATTLE_PASS_SEASON);
 
-        if (coinsToAdd > 0) {
+        if (coinsToAdd > 0 || diamondTokensToAdd > 0) {
           const profile = await getProfile(admin, userId);
-          await admin.from("profiles").update({ coins: profile.coins + coinsToAdd }).eq("user_id", userId);
+          const profileUpdates: Record<string, unknown> = {};
+          if (coinsToAdd > 0) profileUpdates.coins = profile.coins + coinsToAdd;
+          if (diamondTokensToAdd > 0) profileUpdates.diamond_tokens = (profile.diamond_tokens ?? 0) + diamondTokensToAdd;
+          await admin.from("profiles").update(profileUpdates).eq("user_id", userId);
         }
 
-        return jsonResponse({ success: true, current_tier: newTier, xp_progress: newXp, coins_earned: coinsToAdd });
+        return jsonResponse({
+          success: true, current_tier: newTier, xp_progress: newXp,
+          coins_earned: coinsToAdd, diamond_tokens_earned: diamondTokensToAdd,
+        });
       }
 
       case "deduct_coins": {
@@ -250,6 +259,19 @@ Deno.serve(async (req) => {
           .update({ coins: targetProfile.coins + amount })
           .eq("user_id", target_user_id);
         return jsonResponse({ success: true });
+      }
+
+      case "use_diamond_token": {
+        const profile = await getProfile(admin, userId);
+        if (!profile.diamond_tokens || profile.diamond_tokens < 1)
+          return errorResponse("No diamond tokens available");
+
+        await admin
+          .from("profiles")
+          .update({ diamond_tokens: profile.diamond_tokens - 1 })
+          .eq("user_id", userId);
+
+        return jsonResponse({ success: true, diamond_tokens: profile.diamond_tokens - 1 });
       }
 
       default:
