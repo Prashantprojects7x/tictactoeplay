@@ -252,8 +252,8 @@ function SidebarSection({ title, emoji, icon, open, onToggle, children, badge }:
 
 function StatCard({ label, value, color }: { label: string; value: React.ReactNode; color: string }) {
   return (
-    <div className="rounded-lg bg-secondary/20 border border-border/20 p-2 text-center">
-      <span className="text-[8px] uppercase tracking-widest text-muted-foreground/60 block">{label}</span>
+    <div className="rounded-xl bg-secondary/25 border border-border/15 p-2.5 text-center transition-all hover:bg-secondary/35 hover:border-border/25">
+      <span className="text-[8px] uppercase tracking-[0.15em] text-muted-foreground/50 block mb-0.5" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{label}</span>
       <span className={`text-sm font-bold ${color}`} style={{ fontFamily: "'JetBrains Mono'" }}>{value}</span>
     </div>
   );
