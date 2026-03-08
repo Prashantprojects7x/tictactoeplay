@@ -11,6 +11,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Leaderboard from "./pages/Leaderboard";
 import Profile from "./pages/Profile";
 import Shop from "./pages/Shop";
+import Friends from "./pages/Friends";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
