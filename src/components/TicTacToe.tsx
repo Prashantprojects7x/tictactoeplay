@@ -432,7 +432,7 @@ export default function TicTacToe() {
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: row * 0.05 + col * 0.05 }}
-                className={`flex h-24 w-24 items-center justify-center rounded-2xl transition-all duration-300 sm:h-28 sm:w-28
+                className={`relative flex h-24 w-24 items-center justify-center rounded-2xl transition-all duration-300 sm:h-28 sm:w-28
                   ${isWinCell
                     ? "bg-win-highlight/15 glow-win border-2 border-win-highlight/50"
                     : cell === "X"
