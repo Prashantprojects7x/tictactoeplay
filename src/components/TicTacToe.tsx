@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   RotateCcw, Monitor, Users, Trophy, Zap, Brain, Sparkles,
   Volume2, VolumeX, Undo2, Redo2, Eye, Shield, Timer, Menu, X,
-  Crown, Flame, Target, Swords, Globe,
+  Crown, Flame, Target, Swords, Globe, LogIn, LogOut, User,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import type { Player, Difficulty, BoardTheme, MoveRecord } from "./game/types";
 import { BOARD_THEMES, POWERUP_COSTS, ACHIEVEMENT_DEFS } from "./game/types";
 import { checkWinner, getAIMove, findBestMoveForPlayer, playSound } from "./game/engine";
@@ -17,6 +18,7 @@ import {
 import Sidebar from "./game/Sidebar";
 import { useMultiplayer } from "./game/useMultiplayer";
 import MultiplayerLobby from "./game/MultiplayerLobby";
+import { useAuth } from "@/contexts/AuthContext";
 
 // ─── Confetti ──────────────────────────────────────────────────
 function Confetti() {
