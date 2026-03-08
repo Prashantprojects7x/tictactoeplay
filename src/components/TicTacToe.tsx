@@ -926,7 +926,12 @@ export default function TicTacToe() {
         </div>
 
         {/* Board */}
-        <motion.div className={`glass-card-elevated rounded-3xl board-glow ${isFullscreen ? "p-6 sm:p-8" : "p-4 sm:p-5"} ${isOnline && !isMyTurn && !gameOver ? "opacity-80" : ""}`}
+        <motion.div
+          className={`glass-card-elevated rounded-3xl board-glow ${isFullscreen ? "p-6 sm:p-8" : "p-4 sm:p-5"} ${isOnline && !isMyTurn && !gameOver ? "opacity-80" : ""}`}
+          style={{
+            "--theme-accent": BOARD_THEMES[boardTheme].accent,
+            "--theme-cell-bg": BOARD_THEMES[boardTheme].cellBg,
+          } as React.CSSProperties}
           initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, type: "spring", stiffness: 120 }}>
           <div className={`grid grid-cols-3 ${isFullscreen ? "gap-3 sm:gap-4" : "gap-2.5 sm:gap-3"}`}>
             {board.map((cell, i) => {
@@ -945,6 +950,17 @@ export default function TicTacToe() {
                   initial={{ opacity: 0, scale: 0.5, y: 20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ delay: row * 0.06 + col * 0.06, type: "spring", stiffness: 200 }}
+                  style={{
+                    backgroundColor: !isWinCell && !isPeek && !isShielded && !cell
+                      ? `hsl(${BOARD_THEMES[boardTheme].cellBg} / 0.6)`
+                      : undefined,
+                    borderColor: !isWinCell && !isPeek && !isShielded && !cell && canClick
+                      ? `hsl(${BOARD_THEMES[boardTheme].accent} / 0.2)`
+                      : undefined,
+                    boxShadow: !isWinCell && !isPeek && !isShielded && !cell && canClick
+                      ? `inset 0 0 20px hsl(${BOARD_THEMES[boardTheme].accent} / 0.05)`
+                      : undefined,
+                  }}
                   className={`relative flex items-center justify-center rounded-2xl transition-all duration-300
                     ${isFullscreen
                       ? "h-[100px] w-[100px] sm:h-[130px] sm:w-[130px] md:h-[150px] md:w-[150px]"
@@ -957,12 +973,12 @@ export default function TicTacToe() {
                       : isShielded
                       ? "bg-primary/8 border-2 border-dashed border-primary/30"
                       : cell === "X"
-                      ? "bg-x-color/6 border-2 border-x-color/15 glow-x"
+                      ? "border-2 border-x-color/15 glow-x"
                       : cell === "O"
-                      ? "bg-o-color/6 border-2 border-o-color/15 glow-o"
+                      ? "border-2 border-o-color/15 glow-o"
                       : canClick
-                      ? "bg-secondary/40 border-2 border-border/40 hover:bg-cell-hover hover:border-primary/30 cursor-pointer"
-                      : "bg-secondary/40 border-2 border-border/40 cursor-default opacity-60"
+                      ? "border-2 cursor-pointer hover:scale-[1.03]"
+                      : "border-2 border-border/40 cursor-default opacity-60"
                     }
                   `}
                   disabled={!canClick}
