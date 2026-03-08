@@ -39,6 +39,7 @@ export function useMultiplayer() {
   const onResetRef = useRef<(() => void) | null>(null);
   const onOpponentJoinRef = useRef<(() => void) | null>(null);
   const onOpponentLeaveRef = useRef<(() => void) | null>(null);
+  const onChatRef = useRef<((text: string, id: string, isEmoji: boolean) => void) | null>(null);
 
   const cleanup = useCallback(() => {
     if (channelRef.current) {
