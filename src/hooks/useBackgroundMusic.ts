@@ -2,18 +2,10 @@ import { useRef, useEffect, useCallback, useState } from "react";
 
 const MUSIC_SRC = "/audio/background-music.mp3";
 
-// Singleton audio element to survive re-renders and React strict mode
-let _bgAudio: HTMLAudioElement | null = null;
-function getBgAudio(): HTMLAudioElement {
-  if (!_bgAudio) {
-    _bgAudio = new Audio(MUSIC_SRC);
-    _bgAudio.loop = true;
-    _bgAudio.preload = "auto";
-  }
-  return _bgAudio;
-}
-
 export function useBackgroundMusic() {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const hasInteracted = useRef(false);
+
   const [musicVolume, setMusicVolume] = useState(() => {
     const saved = localStorage.getItem("music-volume");
     return saved !== null ? parseFloat(saved) : 0.3;
@@ -23,66 +15,70 @@ export function useBackgroundMusic() {
     return saved !== null ? saved === "true" : true;
   });
   const [isPlaying, setIsPlaying] = useState(false);
-  const hasInteracted = useRef(false);
 
-  const audio = getBgAudio();
-
-  // Sync volume immediately on every change
+  // Create audio element once via ref
   useEffect(() => {
-    audio.volume = Math.max(0, Math.min(1, musicVolume));
-    localStorage.setItem("music-volume", String(musicVolume));
-  }, [musicVolume, audio]);
+    if (!audioRef.current) {
+      const audio = new Audio(MUSIC_SRC);
+      audio.loop = true;
+      audio.preload = "auto";
+      audio.volume = parseFloat(localStorage.getItem("music-volume") || "0.3");
+      audioRef.current = audio;
+      audio.addEventListener("play", () => setIsPlaying(true));
+      audio.addEventListener("pause", () => setIsPlaying(false));
+    }
+    return () => {
+      // Don't destroy on unmount to survive HMR
+    };
+  }, []);
 
-  // Sync play/pause on enabled change
+  // Sync volume
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = Math.max(0, Math.min(1, musicVolume));
+    }
+    localStorage.setItem("music-volume", String(musicVolume));
+  }, [musicVolume]);
+
+  // Sync enabled state
   useEffect(() => {
     localStorage.setItem("music-enabled", String(musicEnabled));
+    const audio = audioRef.current;
+    if (!audio) return;
     if (musicEnabled && hasInteracted.current) {
       audio.play().catch(() => {});
-      setIsPlaying(true);
     } else if (!musicEnabled) {
       audio.pause();
-      setIsPlaying(false);
     }
-  }, [musicEnabled, audio]);
+  }, [musicEnabled]);
 
-  // Start on first user interaction (browsers block autoplay)
-  const startOnInteraction = useCallback(() => {
-    if (hasInteracted.current) return;
-    hasInteracted.current = true;
-    if (musicEnabled) {
-      audio.volume = musicVolume;
-      audio.play().then(() => setIsPlaying(true)).catch(() => {});
-    }
-  }, [musicEnabled, musicVolume, audio]);
-
+  // Start on first user click (autoplay policy)
   useEffect(() => {
-    const handler = () => startOnInteraction();
+    const handler = () => {
+      if (hasInteracted.current) return;
+      hasInteracted.current = true;
+      if (musicEnabled && audioRef.current) {
+        audioRef.current.play().catch(() => {});
+      }
+    };
     document.addEventListener("click", handler);
     document.addEventListener("keydown", handler);
     return () => {
       document.removeEventListener("click", handler);
       document.removeEventListener("keydown", handler);
     };
-  }, [startOnInteraction]);
+  }, [musicEnabled]);
 
-  // Track play state
-  useEffect(() => {
-    const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
-    audio.addEventListener("play", onPlay);
-    audio.addEventListener("pause", onPause);
-    return () => {
-      audio.removeEventListener("play", onPlay);
-      audio.removeEventListener("pause", onPause);
-    };
-  }, [audio]);
+  const toggleMusic = useCallback(() => {
+    setMusicEnabled((prev) => !prev);
+  }, []);
 
   return {
     musicVolume,
     setMusicVolume,
     musicEnabled,
     setMusicEnabled,
-    toggleMusic: useCallback(() => setMusicEnabled((prev) => !prev), []),
+    toggleMusic,
     isPlaying,
   };
 }
