@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import gameLogo from "@/assets/game-logo.png";
+import gameLogo from "@/assets/game-logo-optimized.webp";
 
 export default function Splash() {
   const [phase, setPhase] = useState<"logo" | "burst" | "done">("logo");
