@@ -381,9 +381,8 @@ export default function TicTacToe() {
         mode = "ai"; opponent = `AI (${difficulty})`;
         // No coins in AI mode
       } else {
-        // Local mode: award coins to logged-in user
+        // Local mode: no coins awarded
         recordWin(elapsed);
-        if (user) shouldAwardCoins = true;
       }
 
       if (shouldAwardCoins) {
