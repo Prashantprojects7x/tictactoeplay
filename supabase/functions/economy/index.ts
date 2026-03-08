@@ -32,6 +32,7 @@ const TOTAL_TIERS = 20;
 const COIN_TIERS: Record<number, number> = {
   1: 50, 3: 100, 5: 200, 7: 150, 9: 300, 11: 100, 13: 250, 15: 500, 17: 400, 19: 750,
 };
+const DIAMOND_TOKEN_TIER = 20; // Tier 20 grants a diamond token for free tournament creation
 
 function getAdminClient() {
   return createClient(
