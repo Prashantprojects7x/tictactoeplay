@@ -747,31 +747,31 @@ export default function TicTacToe() {
       </AnimatePresence>
 
       {/* Main game area */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-5 p-4 sm:p-6 z-10 relative">
+      <div className="flex-1 flex flex-col items-center justify-center gap-2 sm:gap-4 p-2 pt-3 sm:p-6 z-10 relative">
 
         {/* Title */}
-        <motion.div className="flex flex-col items-center gap-3" initial={{ y: -40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }}>
-          <div className="flex items-center gap-3">
+        <motion.div className="flex flex-col items-center gap-1.5 sm:gap-3" initial={{ y: -40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }}>
+          <div className="flex items-center gap-2 sm:gap-3">
             <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
-              <Swords className="h-6 w-6 text-primary opacity-70" />
+              <Swords className="h-4 w-4 sm:h-6 sm:w-6 text-primary opacity-70" />
             </motion.div>
-            <h1 className="text-4xl font-black tracking-tighter sm:text-5xl" style={{ fontFamily: "'Space Grotesk', 'JetBrains Mono', monospace" }}>
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tighter" style={{ fontFamily: "'Space Grotesk', 'JetBrains Mono', monospace" }}>
               <span className="text-gradient-title">TicTacToe</span>
             </h1>
             <motion.div animate={{ rotate: [0, -10, 10, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}>
-              <Swords className="h-6 w-6 text-accent opacity-70" />
+              <Swords className="h-4 w-4 sm:h-6 sm:w-6 text-accent opacity-70" />
             </motion.div>
           </div>
-          <div className="flex items-center gap-5 text-[10px] text-muted-foreground font-semibold tracking-widest uppercase">
-            <span className="flex items-center gap-1.5"><Target className="h-3 w-3 text-primary/60" /> Round {round}</span>
+          <div className="flex items-center gap-3 sm:gap-5 text-[9px] sm:text-[10px] text-muted-foreground font-semibold tracking-widest uppercase">
+            <span className="flex items-center gap-1"><Target className="h-3 w-3 text-primary/60" /> R{round}</span>
             <span className="h-3 w-px bg-border/40" />
-            <span className="flex items-center gap-1.5"><Timer className="h-3 w-3 text-accent/60" /> {formatTime(elapsedTime)}</span>
+            <span className="flex items-center gap-1"><Timer className="h-3 w-3 text-accent/60" /> {formatTime(elapsedTime)}</span>
             <span className="h-3 w-px bg-border/40" />
-            <span className="flex items-center gap-1.5"><Flame className="h-3 w-3 text-streak" /> {stats.winStreak}</span>
+            <span className="flex items-center gap-1"><Flame className="h-3 w-3 text-streak" /> {stats.winStreak}</span>
             {isOnline && mp.state.roomCode && (
               <>
                 <span className="h-3 w-px bg-border/40" />
-                <span className="flex items-center gap-1.5 text-accent"><Globe className="h-3 w-3" /> {mp.state.roomCode}</span>
+                <span className="flex items-center gap-1 text-accent"><Globe className="h-3 w-3" /> {mp.state.roomCode}</span>
               </>
             )}
           </div>
@@ -779,7 +779,7 @@ export default function TicTacToe() {
         </motion.div>
 
         {/* Mode selector — pill style */}
-        <motion.div className="flex flex-col items-center gap-3" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
+        <motion.div className="flex flex-col items-center gap-2 sm:gap-3" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
           <div className="glass-nav flex rounded-2xl overflow-hidden p-1 gap-1">
             {([
               { mode: "local" as GameMode, icon: Users, label: "Local" },
@@ -787,14 +787,14 @@ export default function TicTacToe() {
               { mode: "online" as GameMode, icon: Globe, label: "Online" },
             ]).map(({ mode, icon: Icon, label }) => (
               <button key={mode} onClick={() => switchMode(mode)}
-                className={`relative px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 rounded-xl
+                className={`relative px-3 sm:px-4 py-1.5 sm:py-2 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 sm:gap-1.5 rounded-xl
                   ${gameMode === mode
                     ? mode === "online"
                       ? "bg-accent/20 text-accent shadow-lg shadow-accent/10"
                       : "bg-primary/20 text-primary shadow-lg shadow-primary/10"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
                   }`}>
-                <Icon className="h-3.5 w-3.5" /> {label}
+                <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> {label}
                 {gameMode === mode && (
                   <motion.div layoutId="modeIndicator" className={`absolute inset-0 rounded-xl border ${mode === "online" ? "border-accent/30" : "border-primary/30"}`} transition={{ type: "spring", stiffness: 300, damping: 25 }} />
                 )}
@@ -806,7 +806,7 @@ export default function TicTacToe() {
             <motion.div className="glass-nav flex rounded-xl overflow-hidden p-1 gap-1" initial={{ width: 0, opacity: 0 }} animate={{ width: "auto", opacity: 1 }}>
               {(["easy", "medium", "hard"] as Difficulty[]).map((d) => (
                 <button key={d} onClick={() => { setDifficulty(d); resetBoard(); }}
-                  className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 rounded-lg
+                  className={`px-2.5 sm:px-3 py-1 sm:py-1.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 rounded-lg
                     ${d === difficulty ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}>
                   {d === "easy" ? <Zap className="h-3 w-3" /> : d === "medium" ? <Brain className="h-3 w-3" /> : <Sparkles className="h-3 w-3" />}
                   {d}
@@ -816,9 +816,9 @@ export default function TicTacToe() {
           )}
         </motion.div>
 
-        {/* Navigation dock */}
+        {/* Navigation dock — scrollable on mobile */}
         <motion.div
-          className="glass-nav flex items-center gap-1 rounded-2xl px-2 py-1.5"
+          className="glass-nav flex items-center gap-0.5 sm:gap-1 rounded-2xl px-1.5 sm:px-2 py-1 sm:py-1.5 max-w-[calc(100vw-1rem)] overflow-x-auto scrollbar-hide"
           initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.15 }}
         >
           {/* Settings */}
@@ -833,27 +833,27 @@ export default function TicTacToe() {
             setMusicVolume={music.setMusicVolume}
           />
           <button onClick={() => setIsFullscreen(!isFullscreen)}
-            className="nav-item-glow relative rounded-xl p-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
-            {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+            className="nav-item-glow relative rounded-xl p-1.5 sm:p-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all flex-shrink-0" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
+            {isFullscreen ? <Minimize className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Maximize className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
           </button>
 
-          <div className="w-px h-5 bg-border/30 mx-1" />
+          <div className="w-px h-4 sm:h-5 bg-border/30 mx-0.5 flex-shrink-0" />
 
           {/* Profile / Auth */}
           {user ? (
             <button onClick={() => navigate("/profile")}
-              className="nav-item-glow relative flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all" title="Profile">
-              <User className="h-4 w-4 text-accent" />
+              className="nav-item-glow relative flex items-center gap-1 rounded-xl px-1.5 sm:px-2.5 py-1.5 sm:py-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all flex-shrink-0" title="Profile">
+              <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent" />
               <span className="hidden sm:inline text-[10px] font-semibold max-w-[70px] truncate">{user.email?.split("@")[0]}</span>
             </button>
           ) : (
             <button onClick={() => navigate("/auth")}
-              className="nav-item-glow relative flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all" title="Sign In">
-              <LogIn className="h-4 w-4 text-primary" />
+              className="nav-item-glow relative flex items-center gap-1 rounded-xl px-1.5 sm:px-2.5 py-1.5 sm:py-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all flex-shrink-0" title="Sign In">
+              <LogIn className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
             </button>
           )}
 
-          <div className="w-px h-5 bg-border/30 mx-1" />
+          <div className="w-px h-4 sm:h-5 bg-border/30 mx-0.5 flex-shrink-0" />
 
           {/* Feature pages */}
           {([
@@ -865,16 +865,16 @@ export default function TicTacToe() {
             { path: "/achievements", icon: Medal, color: "text-[hsl(var(--neon-pink))]", label: "Badges" },
           ]).map(({ path, icon: Icon, color, label }) => (
             <button key={path} onClick={() => navigate(path)}
-              className="nav-item-glow relative flex items-center gap-1 rounded-xl px-2 py-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all" title={label}>
-              <Icon className={`h-4 w-4 ${color}`} />
+              className="nav-item-glow relative flex items-center gap-1 rounded-xl px-1.5 sm:px-2 py-1.5 sm:py-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all flex-shrink-0" title={label}>
+              <Icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${color}`} />
               <span className="hidden md:inline text-[10px] font-semibold">{label}</span>
             </button>
           ))}
 
-          <div className="w-px h-5 bg-border/30 mx-1 lg:hidden" />
+          <div className="w-px h-4 sm:h-5 bg-border/30 mx-0.5 lg:hidden flex-shrink-0" />
 
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="rounded-xl p-2 text-muted-foreground hover:text-foreground active:scale-90 lg:hidden transition-all">
-            {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="rounded-xl p-1.5 sm:p-2 text-muted-foreground hover:text-foreground active:scale-90 lg:hidden transition-all flex-shrink-0">
+            {sidebarOpen ? <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Menu className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
           </button>
         </motion.div>
 
@@ -899,44 +899,44 @@ export default function TicTacToe() {
         {/* Scoreboard */}
         <motion.div className="glass-card-elevated flex items-stretch rounded-2xl overflow-hidden" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.15, type: "spring" }}>
           {/* Player X */}
-          <div className={`flex flex-col items-center px-6 py-4 border-r border-border/20 transition-all duration-500 ${isXTurn && !gameOver ? "score-active-x" : ""}`}>
-            <div className="flex items-center gap-1.5 mb-1">
-              <motion.div className="h-2.5 w-2.5 rounded-full bg-x-color"
+          <div className={`flex flex-col items-center px-3 sm:px-6 py-2.5 sm:py-4 border-r border-border/20 transition-all duration-500 ${isXTurn && !gameOver ? "score-active-x" : ""}`}>
+            <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
+              <motion.div className="h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-x-color"
                 animate={isXTurn && !gameOver ? { scale: [1, 1.6, 1], boxShadow: ["0 0 0px hsl(265 90% 72%)", "0 0 12px hsl(265 90% 72%)", "0 0 0px hsl(265 90% 72%)"] } : {}}
                 transition={{ duration: 1.2, repeat: Infinity }} />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                {isOnline && mp.state.myRole === "X" ? "You (X)" : getPlayerName("X")}
+              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                {isOnline && mp.state.myRole === "X" ? "You" : getPlayerName("X")}
               </span>
             </div>
-            <motion.span key={`x-${score.X}`} className="text-3xl font-black text-gradient-x" style={{ fontFamily: "'JetBrains Mono'" }} initial={{ scale: 1.5, rotate: -10 }} animate={{ scale: 1, rotate: 0 }}>
+            <motion.span key={`x-${score.X}`} className="text-2xl sm:text-3xl font-black text-gradient-x" style={{ fontFamily: "'JetBrains Mono'" }} initial={{ scale: 1.5, rotate: -10 }} animate={{ scale: 1, rotate: 0 }}>
               {score.X}
             </motion.span>
-            <span className="text-[9px] text-muted-foreground/60 font-mono mt-0.5">🪙 {coinsX}</span>
+            <span className="text-[8px] sm:text-[9px] text-muted-foreground/60 font-mono mt-0.5">🪙 {coinsX}</span>
           </div>
 
           {/* Draws — center with VS */}
-          <div className="flex flex-col items-center justify-center px-5 py-4 border-r border-border/20 relative">
-            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 mb-1">VS</span>
-            <motion.span key={`d-${score.draws}`} className="text-xl font-bold text-muted-foreground/70" style={{ fontFamily: "'JetBrains Mono'" }} initial={{ scale: 1.3 }} animate={{ scale: 1 }}>
+          <div className="flex flex-col items-center justify-center px-3 sm:px-5 py-2.5 sm:py-4 border-r border-border/20 relative">
+            <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 mb-0.5 sm:mb-1">VS</span>
+            <motion.span key={`d-${score.draws}`} className="text-lg sm:text-xl font-bold text-muted-foreground/70" style={{ fontFamily: "'JetBrains Mono'" }} initial={{ scale: 1.3 }} animate={{ scale: 1 }}>
               {score.draws}
             </motion.span>
-            <span className="text-[8px] text-muted-foreground/40 font-medium mt-0.5">{movesMade} moves</span>
+            <span className="text-[7px] sm:text-[8px] text-muted-foreground/40 font-medium mt-0.5">{movesMade} moves</span>
           </div>
 
           {/* Player O */}
-          <div className={`flex flex-col items-center px-6 py-4 transition-all duration-500 ${!isXTurn && !gameOver ? "score-active-o" : ""}`}>
-            <div className="flex items-center gap-1.5 mb-1">
-              <motion.div className="h-2.5 w-2.5 rounded-full bg-o-color"
+          <div className={`flex flex-col items-center px-3 sm:px-6 py-2.5 sm:py-4 transition-all duration-500 ${!isXTurn && !gameOver ? "score-active-o" : ""}`}>
+            <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
+              <motion.div className="h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-o-color"
                 animate={!isXTurn && !gameOver ? { scale: [1, 1.6, 1], boxShadow: ["0 0 0px hsl(165 80% 52%)", "0 0 12px hsl(165 80% 52%)", "0 0 0px hsl(165 80% 52%)"] } : {}}
                 transition={{ duration: 1.2, repeat: Infinity }} />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                {isOnline && mp.state.myRole === "O" ? "You (O)" : getPlayerName("O")}
+              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                {isOnline && mp.state.myRole === "O" ? "You" : getPlayerName("O")}
               </span>
             </div>
-            <motion.span key={`o-${score.O}`} className="text-3xl font-black text-gradient-o" style={{ fontFamily: "'JetBrains Mono'" }} initial={{ scale: 1.5, rotate: 10 }} animate={{ scale: 1, rotate: 0 }}>
+            <motion.span key={`o-${score.O}`} className="text-2xl sm:text-3xl font-black text-gradient-o" style={{ fontFamily: "'JetBrains Mono'" }} initial={{ scale: 1.5, rotate: 10 }} animate={{ scale: 1, rotate: 0 }}>
               {score.O}
             </motion.span>
-            <span className="text-[9px] text-muted-foreground/60 font-mono mt-0.5">🪙 {coinsO}</span>
+            <span className="text-[8px] sm:text-[9px] text-muted-foreground/60 font-mono mt-0.5">🪙 {coinsO}</span>
           </div>
         </motion.div>
 
@@ -957,14 +957,14 @@ export default function TicTacToe() {
 
         {/* Board */}
         <motion.div
-          className={`glass-card-elevated rounded-3xl ${isFullscreen ? "p-6 sm:p-8" : "p-4 sm:p-5"} ${isOnline && !isMyTurn && !gameOver ? "opacity-80" : ""}`}
+          className={`glass-card-elevated rounded-3xl ${isFullscreen ? "p-4 sm:p-6 md:p-8" : "p-3 sm:p-4 md:p-5"} ${isOnline && !isMyTurn && !gameOver ? "opacity-80" : ""}`}
           style={{
             "--theme-accent": BOARD_THEMES[boardTheme].accent,
             "--theme-cell-bg": BOARD_THEMES[boardTheme].cellBg,
             boxShadow: `0 0 40px hsl(${BOARD_THEMES[boardTheme].accent} / 0.15), 0 0 80px hsl(${BOARD_THEMES[boardTheme].accent} / 0.05)`,
           } as React.CSSProperties}
           initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, type: "spring", stiffness: 120 }}>
-          <div className={`grid grid-cols-3 ${isFullscreen ? "gap-3 sm:gap-4" : "gap-2.5 sm:gap-3"}`}>
+          <div className={`grid grid-cols-3 ${isFullscreen ? "gap-2 sm:gap-3 md:gap-4" : "gap-1.5 sm:gap-2.5 md:gap-3"}`}>
             {board.map((cell, i) => {
               const isWinCell = winLine?.includes(i);
               const isPeek = peekCell === i;
@@ -1002,8 +1002,8 @@ export default function TicTacToe() {
                   })()}
                   className={`relative flex items-center justify-center rounded-2xl transition-all duration-300
                     ${isFullscreen
-                      ? "h-[100px] w-[100px] sm:h-[130px] sm:w-[130px] md:h-[150px] md:w-[150px]"
-                      : "h-[72px] w-[72px] sm:h-[88px] sm:w-[88px] md:h-[96px] md:w-[96px]"
+                      ? "h-[80px] w-[80px] sm:h-[110px] sm:w-[110px] md:h-[150px] md:w-[150px]"
+                      : "h-[64px] w-[64px] sm:h-[80px] sm:w-[80px] md:h-[96px] md:w-[96px]"
                     }
                     ${isWinCell
                       ? "bg-win-highlight/12 glow-win border-2 border-win-highlight/40"
@@ -1055,22 +1055,22 @@ export default function TicTacToe() {
         )}
 
         {/* Action buttons */}
-        <motion.div className="flex items-center gap-2.5" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.35 }}>
+        <motion.div className="flex items-center gap-1.5 sm:gap-2.5" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.35 }}>
           {!isOnline && (
             <button onClick={undoMove} disabled={moveHistory.length === 0 || gameOver}
-              className="glass-card flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-all active:scale-95 disabled:opacity-25">
-              <Undo2 className="h-3.5 w-3.5" /> Undo
+              className="glass-card flex items-center gap-1 sm:gap-1.5 rounded-xl px-2 sm:px-3 py-2 sm:py-2.5 text-[10px] sm:text-xs font-medium text-muted-foreground hover:text-foreground transition-all active:scale-95 disabled:opacity-25">
+              <Undo2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Undo
             </button>
           )}
           <button onClick={reset}
-            className="relative flex items-center gap-2 rounded-2xl bg-gradient-to-r from-primary to-[hsl(290,85%,58%)] px-7 py-3.5 text-sm font-bold text-primary-foreground glow-primary transition-all hover:brightness-110 hover:shadow-xl active:scale-95 overflow-hidden group">
+            className="relative flex items-center gap-1.5 sm:gap-2 rounded-2xl bg-gradient-to-r from-primary to-[hsl(290,85%,58%)] px-5 sm:px-7 py-2.5 sm:py-3.5 text-xs sm:text-sm font-bold text-primary-foreground glow-primary transition-all hover:brightness-110 hover:shadow-xl active:scale-95 overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-            <RotateCcw className="h-4 w-4" /> Play Again
+            <RotateCcw className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Play Again
           </button>
           {!isOnline && (
             <button onClick={redoMove} disabled={redoStack.length === 0 || gameOver}
-              className="glass-card flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-all active:scale-95 disabled:opacity-25">
-              <Redo2 className="h-3.5 w-3.5" /> Redo
+              className="glass-card flex items-center gap-1 sm:gap-1.5 rounded-xl px-2 sm:px-3 py-2 sm:py-2.5 text-[10px] sm:text-xs font-medium text-muted-foreground hover:text-foreground transition-all active:scale-95 disabled:opacity-25">
+              <Redo2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Redo
             </button>
           )}
         </motion.div>
