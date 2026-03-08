@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   RotateCcw, Monitor, Users, Trophy, Zap, Brain, Sparkles,
@@ -239,18 +240,27 @@ export default function TicTacToe() {
     mp.sendChat(text, id, isEmoji);
   }, [mp]);
 
+  // Tournament match tracking
+  const tournamentIdRef = useRef<string | null>(null);
+  const tournamentMatchIdRef = useRef<string | null>(null);
+
   // Handle URL-based challenge/join
   useEffect(() => {
     const joinCode = searchParams.get("join");
     const challengeUserId = searchParams.get("challenge");
+    const tournamentId = searchParams.get("tournament");
+    const matchId = searchParams.get("matchId");
+
+    if (tournamentId) tournamentIdRef.current = tournamentId;
+    if (matchId) tournamentMatchIdRef.current = matchId;
+
     if (joinCode) {
       setGameMode("online");
       setShowLobby(false);
       mp.joinRoom(joinCode);
       setSearchParams({}, { replace: true });
-      toast("⚔️ Joining challenge match...");
+      toast(tournamentId ? "🏟️ Joining tournament match..." : "⚔️ Joining challenge match...");
     } else if (challengeUserId && user) {
-      // Create room and send challenge
       const code = mp.createRoom();
       setGameMode("online");
       setShowLobby(false);
@@ -349,6 +359,22 @@ export default function TicTacToe() {
         mode = "online"; opponent = "Online Player";
         // Award coins only to logged-in winner in online mode
         if (myWin && user) shouldAwardCoins = true;
+
+        // Report tournament match result
+        if (tournamentMatchIdRef.current && user) {
+          const winnerId = myWin ? user.id : null;
+          if (winnerId) {
+            supabase
+              .from("tournament_matches")
+              .update({ winner_id: winnerId, status: "finished", finished_at: new Date().toISOString() })
+              .eq("id", tournamentMatchIdRef.current)
+              .then(() => {
+                toast("🏟️ Tournament match result recorded!");
+                tournamentMatchIdRef.current = null;
+                tournamentIdRef.current = null;
+              });
+          }
+        }
       } else if (vsAI) {
         outcome = winner === "X" ? "win" : "loss";
         if (winner === "X") recordWin(elapsed); else recordLoss();
@@ -756,6 +782,11 @@ export default function TicTacToe() {
           <button onClick={() => navigate("/battlepass")}
             className="glass-card flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all">
             <Sparkles className="h-3.5 w-3.5 text-[hsl(var(--gold))]" /> Battle Pass
+          </button>
+
+          <button onClick={() => navigate("/tournament")}
+            className="glass-card flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all">
+            <Trophy className="h-3.5 w-3.5 text-[hsl(var(--streak))]" /> Tournaments
           </button>
 
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="glass-card rounded-full p-2 text-muted-foreground hover:text-foreground active:scale-95 lg:hidden transition-all">
