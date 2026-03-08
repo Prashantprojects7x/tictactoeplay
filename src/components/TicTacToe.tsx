@@ -862,6 +862,7 @@ export default function TicTacToe() {
             { path: "/friends", icon: UserPlus, color: "text-accent", label: "Friends" },
             { path: "/battlepass", icon: Sparkles, color: "text-[hsl(var(--gold))]", label: "Pass" },
             { path: "/tournament", icon: Crown, color: "text-[hsl(var(--streak))]", label: "Cup" },
+            { path: "/achievements", icon: Medal, color: "text-[hsl(var(--neon-pink))]", label: "Badges" },
           ]).map(({ path, icon: Icon, color, label }) => (
             <button key={path} onClick={() => navigate(path)}
               className="nav-item-glow relative flex items-center gap-1 rounded-xl px-2 py-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all" title={label}>
