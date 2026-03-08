@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      battle_pass: {
+        Row: {
+          current_tier: number
+          id: string
+          purchased_at: string
+          season: number
+          user_id: string
+          xp_progress: number
+        }
+        Insert: {
+          current_tier?: number
+          id?: string
+          purchased_at?: string
+          season?: number
+          user_id: string
+          xp_progress?: number
+        }
+        Update: {
+          current_tier?: number
+          id?: string
+          purchased_at?: string
+          season?: number
+          user_id?: string
+          xp_progress?: number
+        }
+        Relationships: []
+      }
       friendships: {
         Row: {
           addressee_id: string
