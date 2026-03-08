@@ -60,7 +60,6 @@ export function useTournament() {
   const [loading, setLoading] = useState(true);
   const [userCoins, setUserCoins] = useState(0);
 
-  // Fetch all open/active tournaments
   const fetchTournaments = useCallback(async () => {
     const { data } = await supabase
       .from("tournaments")
@@ -69,7 +68,6 @@ export function useTournament() {
       .order("created_at", { ascending: false });
 
     if (data) {
-      // Get participant counts
       const tournamentsWithCounts: Tournament[] = [];
       for (const t of data) {
         const { count } = await supabase
@@ -77,7 +75,6 @@ export function useTournament() {
           .select("*", { count: "exact", head: true })
           .eq("tournament_id", t.id);
 
-        // Get creator name
         const { data: profile } = await supabase
           .from("profiles")
           .select("display_name")
@@ -95,7 +92,6 @@ export function useTournament() {
     setLoading(false);
   }, []);
 
-  // Fetch user coins
   const fetchCoins = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
@@ -106,7 +102,6 @@ export function useTournament() {
     if (data) setUserCoins(data.coins);
   }, [user]);
 
-  // Fetch tournament details
   const fetchTournamentDetails = useCallback(async (tournamentId: string) => {
     const [tRes, pRes, mRes] = await Promise.all([
       supabase.from("tournaments").select("*").eq("id", tournamentId).single(),
@@ -115,7 +110,6 @@ export function useTournament() {
     ]);
 
     if (tRes.data) {
-      // Get creator name
       const { data: profile } = await supabase
         .from("profiles")
         .select("display_name")
@@ -125,7 +119,6 @@ export function useTournament() {
     }
 
     if (pRes.data) {
-      // Enrich with display names
       const enriched: TournamentParticipant[] = [];
       for (const p of pRes.data) {
         const { data: prof } = await supabase
@@ -143,7 +136,6 @@ export function useTournament() {
     }
 
     if (mRes.data) {
-      // Enrich match player names
       const enrichedMatches: TournamentMatch[] = [];
       for (const m of mRes.data) {
         let p1Name = "TBD", p2Name = "TBD";
@@ -166,7 +158,6 @@ export function useTournament() {
     fetchCoins();
   }, [fetchTournaments, fetchCoins]);
 
-  // Realtime subscription for tournament updates
   useEffect(() => {
     if (!activeTournament) return;
 
@@ -183,10 +174,19 @@ export function useTournament() {
     return () => { supabase.removeChannel(channel); };
   }, [activeTournament?.id, fetchTournamentDetails]);
 
-  // Create tournament
+  // Create tournament — deduct coins via edge function
   const createTournament = useCallback(async (name: string, entryFee: number) => {
     if (!user) { toast("Sign in first"); return null; }
     if (userCoins < entryFee) { toast("Not enough coins!"); return null; }
+
+    // Deduct entry fee server-side
+    const { data: deductResult, error: deductErr } = await supabase.functions.invoke("economy", {
+      body: { action: "deduct_coins", amount: entryFee },
+    });
+    if (deductErr || deductResult?.error) {
+      toast(deductResult?.error || "Failed to deduct coins");
+      return null;
+    }
 
     const { data, error } = await supabase
       .from("tournaments")
@@ -200,10 +200,15 @@ export function useTournament() {
       .select()
       .single();
 
-    if (error || !data) { toast("Failed to create tournament"); return null; }
+    if (error || !data) {
+      // Refund via edge function
+      await supabase.functions.invoke("economy", {
+        body: { action: "award_coins", target_user_id: user.id, amount: entryFee },
+      });
+      toast("Failed to create tournament");
+      return null;
+    }
 
-    // Deduct entry fee and join
-    await supabase.from("profiles").update({ coins: userCoins - entryFee }).eq("user_id", user.id);
     await supabase.from("tournament_participants").insert({ tournament_id: data.id, user_id: user.id, seed: 1 });
 
     setUserCoins((c) => c - entryFee);
@@ -220,38 +225,41 @@ export function useTournament() {
     if (!t || t.status !== "open") { toast("Tournament not available"); return false; }
     if (userCoins < t.entry_fee) { toast(`Need ${t.entry_fee} coins to enter!`); return false; }
 
-    // Check if already joined
     const { data: existing } = await supabase
       .from("tournament_participants")
       .select("id")
       .eq("tournament_id", tournamentId)
       .eq("user_id", user.id)
       .maybeSingle();
-
     if (existing) { toast("Already joined!"); return false; }
 
-    // Get current participant count for seed
     const { count } = await supabase
       .from("tournament_participants")
       .select("*", { count: "exact", head: true })
       .eq("tournament_id", tournamentId);
-
     const seed = (count ?? 0) + 1;
 
-    // Deduct fee
-    await supabase.from("profiles").update({ coins: userCoins - t.entry_fee }).eq("user_id", user.id);
+    // Deduct fee server-side
+    const { data: deductResult, error: deductErr } = await supabase.functions.invoke("economy", {
+      body: { action: "deduct_coins", amount: t.entry_fee },
+    });
+    if (deductErr || deductResult?.error) {
+      toast(deductResult?.error || "Failed to deduct coins");
+      return false;
+    }
 
-    // Join
     const { error } = await supabase
       .from("tournament_participants")
       .insert({ tournament_id: tournamentId, user_id: user.id, seed });
 
     if (error) {
-      await supabase.from("profiles").update({ coins: userCoins }).eq("user_id", user.id);
-      toast("Failed to join"); return false;
+      await supabase.functions.invoke("economy", {
+        body: { action: "award_coins", target_user_id: user.id, amount: t.entry_fee },
+      });
+      toast("Failed to join");
+      return false;
     }
 
-    // Update prize pool
     await supabase
       .from("tournaments")
       .update({ prize_pool: t.prize_pool + t.entry_fee })
@@ -261,7 +269,6 @@ export function useTournament() {
     toast("✅ Joined tournament!");
     await fetchTournaments();
 
-    // Auto-start if full
     if (seed >= t.max_players) {
       await startTournament(tournamentId);
     }
@@ -269,7 +276,6 @@ export function useTournament() {
     return true;
   }, [user, userCoins, fetchTournaments]);
 
-  // Start tournament (generate bracket)
   const startTournament = useCallback(async (tournamentId: string) => {
     const { data: parts } = await supabase
       .from("tournament_participants")
@@ -279,11 +285,9 @@ export function useTournament() {
 
     if (!parts || parts.length < 2) { toast("Need at least 2 players"); return; }
 
-    // Shuffle for fairness
     const shuffled = [...parts].sort(() => Math.random() - 0.5);
 
-    // Create round 1 matches
-    const matchInserts = [];
+    const matchInserts: any[] = [];
     for (let i = 0; i < Math.floor(shuffled.length / 2); i++) {
       matchInserts.push({
         tournament_id: tournamentId,
@@ -296,7 +300,6 @@ export function useTournament() {
       });
     }
 
-    // Handle odd player (bye)
     if (shuffled.length % 2 === 1) {
       const lastIdx = matchInserts.length - 1;
       if (matchInserts[lastIdx] && !matchInserts[lastIdx].player2_id) {
@@ -305,10 +308,7 @@ export function useTournament() {
       }
     }
 
-    // Calculate total rounds needed
     const totalRounds = Math.ceil(Math.log2(shuffled.length));
-
-    // Create placeholder matches for future rounds
     let matchesInRound = Math.floor(shuffled.length / 2);
     for (let round = 2; round <= totalRounds; round++) {
       matchesInRound = Math.ceil(matchesInRound / 2);
@@ -331,7 +331,6 @@ export function useTournament() {
       .update({ status: "in_progress", current_round: 1, started_at: new Date().toISOString() })
       .eq("id", tournamentId);
 
-    // Handle byes — advance players with byes
     for (const m of matchInserts) {
       if (m.status === "bye" && m.player1_id) {
         await advanceWinner(tournamentId, 1, m.match_index, m.player1_id);
@@ -341,7 +340,6 @@ export function useTournament() {
     toast("🏟️ Tournament started!");
   }, []);
 
-  // Report match result
   const reportResult = useCallback(async (matchId: string, winnerId: string) => {
     const match = matches.find((m) => m.id === matchId);
     if (!match) return;
@@ -351,7 +349,6 @@ export function useTournament() {
       .update({ winner_id: winnerId, status: "finished", finished_at: new Date().toISOString() })
       .eq("id", matchId);
 
-    // Eliminate loser
     const loserId = match.player1_id === winnerId ? match.player2_id : match.player1_id;
     if (loserId) {
       await supabase
@@ -361,9 +358,7 @@ export function useTournament() {
         .eq("user_id", loserId);
     }
 
-    // Advance winner to next round
     await advanceWinner(match.tournament_id, match.round, match.match_index, winnerId);
-
     await fetchTournamentDetails(match.tournament_id);
   }, [matches, fetchTournamentDetails]);
 
@@ -385,7 +380,6 @@ export function useTournament() {
       if (isPlayer1) update.player1_id = winnerId;
       else update.player2_id = winnerId;
 
-      // If both players are now set, mark as ready
       const otherPlayer = isPlayer1 ? nextMatch.player2_id : nextMatch.player1_id;
       if (otherPlayer) update.status = "ready";
 
@@ -394,7 +388,7 @@ export function useTournament() {
         .update(update)
         .eq("id", nextMatch.id);
     } else {
-      // No next match = this was the final — set tournament winner
+      // Final — award prize via edge function
       const { data: t } = await supabase.from("tournaments").select("prize_pool").eq("id", tournamentId).single();
 
       await supabase
@@ -402,25 +396,21 @@ export function useTournament() {
         .update({ winner_id: winnerId, status: "finished", finished_at: new Date().toISOString() })
         .eq("id", tournamentId);
 
-      // Award prize pool
       if (t) {
-        const { data: profile } = await supabase.from("profiles").select("coins").eq("user_id", winnerId).single();
-        if (profile) {
-          await supabase.from("profiles").update({ coins: profile.coins + t.prize_pool }).eq("user_id", winnerId);
-        }
+        await supabase.functions.invoke("economy", {
+          body: { action: "award_coins", target_user_id: winnerId, amount: t.prize_pool },
+        });
       }
 
       toast("🏆 Tournament complete! Winner crowned!");
     }
   };
 
-  // Check if user is in tournament
   const isUserInTournament = useCallback((tournamentId: string) => {
     if (!user) return false;
     return participants.some((p) => p.tournament_id === tournamentId && p.user_id === user.id);
   }, [user, participants]);
 
-  // Get user's active match
   const getUserMatch = useCallback(() => {
     if (!user || !activeTournament) return null;
     return matches.find(

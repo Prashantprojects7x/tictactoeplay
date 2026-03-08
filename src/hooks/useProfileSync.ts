@@ -9,51 +9,12 @@ export function useProfileSync() {
     async (outcome: "win" | "loss" | "draw", elapsed: number, xpGained: number) => {
       if (!user) return null;
 
-      // Fetch current profile
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
+      const { data, error } = await supabase.functions.invoke("economy", {
+        body: { action: "sync_game", outcome, elapsed, xp_gained: xpGained },
+      });
 
-      if (!profile) return null;
-
-      const updates: Record<string, unknown> = {
-        total_games: profile.total_games + 1,
-      };
-
-      if (outcome === "win") {
-        updates.total_wins = profile.total_wins + 1;
-        updates.win_streak = profile.win_streak + 1;
-        updates.coins = profile.coins + 10;
-        if (profile.win_streak + 1 > profile.max_streak) {
-          updates.max_streak = profile.win_streak + 1;
-        }
-        if (elapsed > 0 && (profile.best_time === null || elapsed < profile.best_time)) {
-          updates.best_time = elapsed;
-        }
-      } else if (outcome === "loss") {
-        updates.win_streak = 0;
-      }
-
-      // XP & Level
-      const { processXpGain } = await import("@/components/game/progression");
-      const { newXp, newLevel } = processXpGain(
-        profile.xp as number,
-        profile.level as number,
-        xpGained
-      );
-      updates.xp = newXp;
-      updates.level = newLevel;
-
-      const { data: updated } = await supabase
-        .from("profiles")
-        .update(updates)
-        .eq("user_id", user.id)
-        .select()
-        .single();
-
-      return updated;
+      if (error) { console.error("syncGameResult error:", error); return null; }
+      return data?.profile ?? null;
     },
     [user]
   );
@@ -61,17 +22,14 @@ export function useProfileSync() {
   const addCoinsToProfile = useCallback(
     async (amount: number) => {
       if (!user) return;
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("coins")
-        .eq("user_id", user.id)
-        .single();
-
-      if (profile) {
-        await supabase
-          .from("profiles")
-          .update({ coins: Math.max(0, profile.coins + amount) })
-          .eq("user_id", user.id);
+      if (amount > 0) {
+        await supabase.functions.invoke("economy", {
+          body: { action: "award_coins", target_user_id: user.id, amount },
+        });
+      } else if (amount < 0) {
+        await supabase.functions.invoke("economy", {
+          body: { action: "deduct_coins", amount: Math.abs(amount) },
+        });
       }
     },
     [user]

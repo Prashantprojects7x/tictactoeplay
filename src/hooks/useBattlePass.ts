@@ -45,24 +45,16 @@ export function useBattlePass() {
     if (!user) { toast("Sign in to purchase"); return false; }
     if (coins < BATTLE_PASS_COST) { toast("Not enough coins! Need 1,000 🪙"); return false; }
 
-    const { error: coinErr } = await supabase
-      .from("profiles")
-      .update({ coins: coins - BATTLE_PASS_COST })
-      .eq("user_id", user.id);
+    const { data, error } = await supabase.functions.invoke("economy", {
+      body: { action: "purchase_battle_pass" },
+    });
 
-    if (coinErr) { toast("Failed to deduct coins"); return false; }
-
-    const { error: bpErr } = await supabase
-      .from("battle_pass")
-      .insert({ user_id: user.id, season: BATTLE_PASS_SEASON, current_tier: 0, xp_progress: 0 });
-
-    if (bpErr) {
-      await supabase.from("profiles").update({ coins }).eq("user_id", user.id);
-      toast("Purchase failed");
+    if (error || data?.error) {
+      toast(data?.error || "Purchase failed");
       return false;
     }
 
-    setCoins((c) => c - BATTLE_PASS_COST);
+    setCoins(data.coins);
     setOwned(true);
     toast("🎉 Battle Pass Activated!");
     return true;
@@ -71,42 +63,26 @@ export function useBattlePass() {
   const addBattlePassXp = useCallback(async (xpAmount: number) => {
     if (!user || !owned) return;
 
-    let newXp = xpProgress + xpAmount;
-    let newTier = currentTier;
-    let coinsToAdd = 0;
+    const { data, error } = await supabase.functions.invoke("economy", {
+      body: { action: "add_bp_xp", xp_amount: xpAmount },
+    });
 
-    while (newTier < TOTAL_TIERS && newXp >= XP_PER_TIER) {
-      newXp -= XP_PER_TIER;
-      newTier += 1;
+    if (error || data?.error) return;
 
-      // Grant tier reward
-      const tierData = BATTLE_PASS_TIERS.find((t) => t.tier === newTier);
-      if (tierData && tierData.type === "coins") {
-        coinsToAdd += tierData.value as number;
-      }
+    setCurrentTier(data.current_tier);
+    setXpProgress(data.xp_progress);
 
-      toast(`🏆 Battle Pass Tier ${newTier} unlocked! ${tierData?.icon || ""}`);
-    }
-
-    if (newTier >= TOTAL_TIERS) newXp = 0;
-
-    await supabase
-      .from("battle_pass")
-      .update({ current_tier: newTier, xp_progress: newXp })
-      .eq("user_id", user.id)
-      .eq("season", BATTLE_PASS_SEASON);
-
-    if (coinsToAdd > 0) {
-      const { data: profile } = await supabase.from("profiles").select("coins").eq("user_id", user.id).single();
-      if (profile) {
-        await supabase.from("profiles").update({ coins: profile.coins + coinsToAdd }).eq("user_id", user.id);
-        setCoins(profile.coins + coinsToAdd);
+    if (data.current_tier > currentTier) {
+      for (let t = currentTier + 1; t <= data.current_tier; t++) {
+        const tierData = BATTLE_PASS_TIERS.find((bt) => bt.tier === t);
+        toast(`🏆 Battle Pass Tier ${t} unlocked! ${tierData?.icon || ""}`);
       }
     }
 
-    setCurrentTier(newTier);
-    setXpProgress(newXp);
-  }, [user, owned, currentTier, xpProgress]);
+    if (data.coins_earned > 0) {
+      setCoins((c) => c + data.coins_earned);
+    }
+  }, [user, owned, currentTier]);
 
   return {
     owned, currentTier, xpProgress, coins, loading,
