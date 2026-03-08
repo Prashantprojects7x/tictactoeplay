@@ -21,6 +21,7 @@ import MultiplayerLobby from "./game/MultiplayerLobby";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfileSync } from "@/hooks/useProfileSync";
 import { useChallenges } from "@/hooks/useChallenges";
+import { useBattlePass } from "@/hooks/useBattlePass";
 import ChallengeNotification from "./game/ChallengeNotification";
 import { calculateXpGain, processXpGain, getLevelTitle, xpForLevel } from "./game/progression";
 
