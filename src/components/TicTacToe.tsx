@@ -1002,8 +1002,8 @@ export default function TicTacToe() {
                   })()}
                   className={`relative flex items-center justify-center rounded-2xl transition-all duration-300
                     ${isFullscreen
-                      ? "h-[100px] w-[100px] sm:h-[130px] sm:w-[130px] md:h-[150px] md:w-[150px]"
-                      : "h-[72px] w-[72px] sm:h-[88px] sm:w-[88px] md:h-[96px] md:w-[96px]"
+                      ? "h-[80px] w-[80px] sm:h-[110px] sm:w-[110px] md:h-[150px] md:w-[150px]"
+                      : "h-[64px] w-[64px] sm:h-[80px] sm:w-[80px] md:h-[96px] md:w-[96px]"
                     }
                     ${isWinCell
                       ? "bg-win-highlight/12 glow-win border-2 border-win-highlight/40"
