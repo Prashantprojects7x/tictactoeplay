@@ -11,6 +11,7 @@ import Shop from "@/pages/Shop";
 import Friends from "@/pages/Friends";
 import BattlePass from "@/pages/BattlePass";
 import Tournament from "@/pages/Tournament";
+import Achievements from "@/pages/Achievements";
 import NotFound from "@/pages/NotFound";
 
 export default function AnimatedRoutes() {
@@ -27,6 +28,7 @@ export default function AnimatedRoutes() {
         <Route path="/friends" element={<PageTransition><Friends /></PageTransition>} />
         <Route path="/battlepass" element={<PageTransition><BattlePass /></PageTransition>} />
         <Route path="/tournament" element={<PageTransition><Tournament /></PageTransition>} />
+        <Route path="/achievements" element={<PageTransition><Achievements /></PageTransition>} />
         <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
         <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
