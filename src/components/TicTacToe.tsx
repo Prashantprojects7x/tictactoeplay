@@ -651,6 +651,10 @@ export default function TicTacToe() {
             {soundEnabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
           </button>
 
+          <button onClick={() => setIsFullscreen(!isFullscreen)} className="glass-card rounded-full p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all" title={isFullscreen ? "Exit fullscreen" : "Fullscreen mode"}>
+            {isFullscreen ? <Minimize className="h-3.5 w-3.5" /> : <Maximize className="h-3.5 w-3.5" />}
+          </button>
+
           {user ? (
             <button onClick={() => navigate("/profile")}
               className="glass-card flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all">
