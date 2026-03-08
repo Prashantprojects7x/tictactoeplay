@@ -407,8 +407,8 @@ export default function TicTacToe() {
 
       // Play appropriate sound based on outcome
       if (soundEnabled) {
-        if (outcome === "loss") playSound("loss", 0.1);
-        else playSound("win", 0.1);
+        if (outcome === "loss") playSound("loss", sfxVol);
+        else playSound("win", sfxVol);
       }
 
       if (shouldAwardCoins) {
