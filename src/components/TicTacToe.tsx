@@ -747,31 +747,31 @@ export default function TicTacToe() {
       </AnimatePresence>
 
       {/* Main game area */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-5 p-4 sm:p-6 z-10 relative">
+      <div className="flex-1 flex flex-col items-center justify-center gap-2 sm:gap-4 p-2 pt-3 sm:p-6 z-10 relative">
 
         {/* Title */}
-        <motion.div className="flex flex-col items-center gap-3" initial={{ y: -40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }}>
-          <div className="flex items-center gap-3">
+        <motion.div className="flex flex-col items-center gap-1.5 sm:gap-3" initial={{ y: -40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }}>
+          <div className="flex items-center gap-2 sm:gap-3">
             <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
-              <Swords className="h-6 w-6 text-primary opacity-70" />
+              <Swords className="h-4 w-4 sm:h-6 sm:w-6 text-primary opacity-70" />
             </motion.div>
-            <h1 className="text-4xl font-black tracking-tighter sm:text-5xl" style={{ fontFamily: "'Space Grotesk', 'JetBrains Mono', monospace" }}>
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tighter" style={{ fontFamily: "'Space Grotesk', 'JetBrains Mono', monospace" }}>
               <span className="text-gradient-title">TicTacToe</span>
             </h1>
             <motion.div animate={{ rotate: [0, -10, 10, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}>
-              <Swords className="h-6 w-6 text-accent opacity-70" />
+              <Swords className="h-4 w-4 sm:h-6 sm:w-6 text-accent opacity-70" />
             </motion.div>
           </div>
-          <div className="flex items-center gap-5 text-[10px] text-muted-foreground font-semibold tracking-widest uppercase">
-            <span className="flex items-center gap-1.5"><Target className="h-3 w-3 text-primary/60" /> Round {round}</span>
+          <div className="flex items-center gap-3 sm:gap-5 text-[9px] sm:text-[10px] text-muted-foreground font-semibold tracking-widest uppercase">
+            <span className="flex items-center gap-1"><Target className="h-3 w-3 text-primary/60" /> R{round}</span>
             <span className="h-3 w-px bg-border/40" />
-            <span className="flex items-center gap-1.5"><Timer className="h-3 w-3 text-accent/60" /> {formatTime(elapsedTime)}</span>
+            <span className="flex items-center gap-1"><Timer className="h-3 w-3 text-accent/60" /> {formatTime(elapsedTime)}</span>
             <span className="h-3 w-px bg-border/40" />
-            <span className="flex items-center gap-1.5"><Flame className="h-3 w-3 text-streak" /> {stats.winStreak}</span>
+            <span className="flex items-center gap-1"><Flame className="h-3 w-3 text-streak" /> {stats.winStreak}</span>
             {isOnline && mp.state.roomCode && (
               <>
                 <span className="h-3 w-px bg-border/40" />
-                <span className="flex items-center gap-1.5 text-accent"><Globe className="h-3 w-3" /> {mp.state.roomCode}</span>
+                <span className="flex items-center gap-1 text-accent"><Globe className="h-3 w-3" /> {mp.state.roomCode}</span>
               </>
             )}
           </div>
