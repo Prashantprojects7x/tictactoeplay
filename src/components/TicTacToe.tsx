@@ -195,6 +195,7 @@ export default function TicTacToe() {
   const [round, setRound] = useState(1);
   const [boardTheme, setBoardTheme] = useState<BoardTheme>("default");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const [coinsX, setCoinsX] = useState(() => getCoins("X"));
