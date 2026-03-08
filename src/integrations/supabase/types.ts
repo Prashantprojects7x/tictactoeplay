@@ -65,6 +65,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_purchases: {
+        Row: {
+          equipped: boolean
+          id: string
+          item_id: string
+          item_type: string
+          purchased_at: string
+          user_id: string
+        }
+        Insert: {
+          equipped?: boolean
+          id?: string
+          item_id: string
+          item_type: string
+          purchased_at?: string
+          user_id: string
+        }
+        Update: {
+          equipped?: boolean
+          id?: string
+          item_id?: string
+          item_type?: string
+          purchased_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
