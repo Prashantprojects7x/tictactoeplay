@@ -261,6 +261,19 @@ Deno.serve(async (req) => {
         return jsonResponse({ success: true });
       }
 
+      case "use_diamond_token": {
+        const profile = await getProfile(admin, userId);
+        if (!profile.diamond_tokens || profile.diamond_tokens < 1)
+          return errorResponse("No diamond tokens available");
+
+        await admin
+          .from("profiles")
+          .update({ diamond_tokens: profile.diamond_tokens - 1 })
+          .eq("user_id", userId);
+
+        return jsonResponse({ success: true, diamond_tokens: profile.diamond_tokens - 1 });
+      }
+
       default:
         return errorResponse("Unknown action");
     }
