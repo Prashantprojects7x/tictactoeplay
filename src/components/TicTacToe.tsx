@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   RotateCcw, Monitor, Users, Trophy, Zap, Brain, Sparkles,
   Volume2, VolumeX, Undo2, Redo2, Eye, Shield, Timer, Menu, X,
-  Crown, Flame, Target, Swords, Globe, LogIn, LogOut, User,
+  Crown, Flame, Target, Swords, Globe, LogIn, LogOut, User, Maximize, Minimize,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -81,9 +81,9 @@ function FloatingParticles() {
 }
 
 // ─── SVG Marks with enhanced animations ─────────────────────────
-function XMark({ isWin }: { isWin: boolean }) {
+function XMark({ isWin, large }: { isWin: boolean; large?: boolean }) {
   return (
-    <motion.svg viewBox="0 0 50 50" className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14"
+    <motion.svg viewBox="0 0 50 50" className={large ? "h-14 w-14 sm:h-18 sm:w-18 md:h-20 md:w-20" : "h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14"}
       initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 12 }}>
       <motion.line x1="12" y1="12" x2="38" y2="38"
@@ -110,9 +110,9 @@ function XMark({ isWin }: { isWin: boolean }) {
   );
 }
 
-function OMark({ isWin }: { isWin: boolean }) {
+function OMark({ isWin, large }: { isWin: boolean; large?: boolean }) {
   return (
-    <motion.svg viewBox="0 0 50 50" className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14"
+    <motion.svg viewBox="0 0 50 50" className={large ? "h-14 w-14 sm:h-18 sm:w-18 md:h-20 md:w-20" : "h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14"}
       initial={{ scale: 0, rotate: 180 }} animate={{ scale: 1, rotate: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 12 }}>
       <motion.circle cx="25" cy="25" r="14" fill="none"
@@ -195,6 +195,7 @@ export default function TicTacToe() {
   const [round, setRound] = useState(1);
   const [boardTheme, setBoardTheme] = useState<BoardTheme>("default");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const [coinsX, setCoinsX] = useState(() => getCoins("X"));
@@ -578,7 +579,7 @@ export default function TicTacToe() {
   }
 
   return (
-    <div className="relative flex min-h-screen animated-bg overflow-hidden">
+    <div className={`relative flex min-h-screen animated-bg overflow-hidden ${isFullscreen ? "fullscreen-game" : ""}`}>
       <FloatingParticles />
       <div className="pointer-events-none absolute inset-0 bg-grid-pattern opacity-30 z-0" />
 
@@ -648,6 +649,10 @@ export default function TicTacToe() {
 
           <button onClick={() => setSoundEnabled(!soundEnabled)} className="glass-card rounded-full p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all">
             {soundEnabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+          </button>
+
+          <button onClick={() => setIsFullscreen(!isFullscreen)} className="glass-card rounded-full p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all" title={isFullscreen ? "Exit fullscreen" : "Fullscreen mode"}>
+            {isFullscreen ? <Minimize className="h-3.5 w-3.5" /> : <Maximize className="h-3.5 w-3.5" />}
           </button>
 
           {user ? (
@@ -747,9 +752,9 @@ export default function TicTacToe() {
         </div>
 
         {/* Board */}
-        <motion.div className={`glass-card-elevated rounded-3xl p-4 sm:p-5 board-glow ${isOnline && !isMyTurn && !gameOver ? "opacity-80" : ""}`}
+        <motion.div className={`glass-card-elevated rounded-3xl board-glow ${isFullscreen ? "p-6 sm:p-8" : "p-4 sm:p-5"} ${isOnline && !isMyTurn && !gameOver ? "opacity-80" : ""}`}
           initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, type: "spring", stiffness: 120 }}>
-          <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+          <div className={`grid grid-cols-3 ${isFullscreen ? "gap-3 sm:gap-4" : "gap-2.5 sm:gap-3"}`}>
             {board.map((cell, i) => {
               const isWinCell = winLine?.includes(i);
               const isPeek = peekCell === i;
@@ -766,7 +771,11 @@ export default function TicTacToe() {
                   initial={{ opacity: 0, scale: 0.5, y: 20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ delay: row * 0.06 + col * 0.06, type: "spring", stiffness: 200 }}
-                  className={`relative flex h-[72px] w-[72px] items-center justify-center rounded-2xl transition-all duration-300 sm:h-[88px] sm:w-[88px] md:h-[96px] md:w-[96px]
+                  className={`relative flex items-center justify-center rounded-2xl transition-all duration-300
+                    ${isFullscreen
+                      ? "h-[100px] w-[100px] sm:h-[130px] sm:w-[130px] md:h-[150px] md:w-[150px]"
+                      : "h-[72px] w-[72px] sm:h-[88px] sm:w-[88px] md:h-[96px] md:w-[96px]"
+                    }
                     ${isWinCell
                       ? "bg-win-highlight/12 glow-win border-2 border-win-highlight/40"
                       : isPeek
@@ -785,8 +794,8 @@ export default function TicTacToe() {
                   disabled={!canClick}
                 >
                   <AnimatePresence>
-                    {cell === "X" && <XMark isWin={!!isWinCell} />}
-                    {cell === "O" && <OMark isWin={!!isWinCell} />}
+                    {cell === "X" && <XMark isWin={!!isWinCell} large={isFullscreen} />}
+                    {cell === "O" && <OMark isWin={!!isWinCell} large={isFullscreen} />}
                   </AnimatePresence>
                   {isShielded && (
                     <motion.span className="absolute top-1 right-1.5 text-xs" animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 2, repeat: Infinity }}>🛡️</motion.span>
@@ -849,14 +858,16 @@ export default function TicTacToe() {
         )}
       </div>
 
-      {/* Desktop sidebar */}
-      <div className="hidden lg:block w-[280px] border-l border-border/30 bg-card/20 backdrop-blur-sm p-4 overflow-y-auto max-h-screen z-10">
-        <Sidebar coinsX={coinsX} coinsO={coinsO} boardTheme={boardTheme} setBoardTheme={setBoardTheme}
-          difficulty={difficulty} setDifficulty={(d) => { setDifficulty(d); resetBoard(); }}
-          soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled}
-          onResetCoins={() => { resetCoinsStorage(); setCoinsX(0); setCoinsO(0); refreshSidebar(); toast("Coins reset"); }}
-          vsAI={vsAI} refreshKey={refreshKey} />
-      </div>
+      {/* Desktop sidebar — hidden in fullscreen */}
+      {!isFullscreen && (
+        <div className="hidden lg:block w-[280px] border-l border-border/30 bg-card/20 backdrop-blur-sm p-4 overflow-y-auto max-h-screen z-10">
+          <Sidebar coinsX={coinsX} coinsO={coinsO} boardTheme={boardTheme} setBoardTheme={setBoardTheme}
+            difficulty={difficulty} setDifficulty={(d) => { setDifficulty(d); resetBoard(); }}
+            soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled}
+            onResetCoins={() => { resetCoinsStorage(); setCoinsX(0); setCoinsO(0); refreshSidebar(); toast("Coins reset"); }}
+            vsAI={vsAI} refreshKey={refreshKey} />
+        </div>
+      )}
 
       {/* Mobile sidebar overlay */}
       <AnimatePresence>
