@@ -1014,7 +1014,7 @@ export default function TicTacToe() {
 
       {/* Desktop sidebar — hidden in fullscreen */}
       {!isFullscreen && (
-        <div className="hidden lg:block w-[280px] border-l border-border/30 bg-card/20 backdrop-blur-sm p-4 overflow-y-auto max-h-screen z-10">
+        <div className="hidden lg:block w-[290px] border-l border-border/20 bg-gradient-to-b from-card/30 to-background/50 backdrop-blur-xl p-4 overflow-y-auto max-h-screen z-10">
           <Sidebar coinsX={coinsX} coinsO={coinsO} boardTheme={boardTheme} setBoardTheme={setBoardTheme}
             difficulty={difficulty} setDifficulty={(d) => { setDifficulty(d); resetBoard(); }}
             soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled}
