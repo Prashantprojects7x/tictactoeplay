@@ -318,7 +318,7 @@ export default function TicTacToe() {
         const def = ACHIEVEMENT_DEFS[id];
         toasts.push(`🎉 Achievement: ${def?.name || id}`);
         addCoins("X", 5);
-        if (soundEnabled) playSound("achievement", 0.1);
+        if (soundEnabled) playSound("achievement", sfxVol);
       }
     };
     if (stats.wins >= 1) tryUnlock("first_win");
