@@ -119,8 +119,8 @@ export default function TicTacToe() {
     const toasts: string[] = [];
     const tryUnlock = (id: string) => {
       if (unlockAchievementStorage(id)) {
-        const { name } = require("./game/types").ACHIEVEMENT_DEFS[id];
-        toasts.push(`🎉 Achievement: ${name}`);
+        const def = ACHIEVEMENT_DEFS[id];
+        toasts.push(`🎉 Achievement: ${def?.name || id}`);
         addCoins("X", 5);
         if (soundEnabled) playSound("achievement", 0.1);
       }
