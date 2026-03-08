@@ -22,12 +22,14 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          level: number
           max_streak: number
           total_games: number
           total_wins: number
           updated_at: string
           user_id: string
           win_streak: number
+          xp: number
         }
         Insert: {
           avatar_url?: string | null
@@ -36,12 +38,14 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          level?: number
           max_streak?: number
           total_games?: number
           total_wins?: number
           updated_at?: string
           user_id: string
           win_streak?: number
+          xp?: number
         }
         Update: {
           avatar_url?: string | null
@@ -50,12 +54,14 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          level?: number
           max_streak?: number
           total_games?: number
           total_wins?: number
           updated_at?: string
           user_id?: string
           win_streak?: number
+          xp?: number
         }
         Relationships: []
       }
