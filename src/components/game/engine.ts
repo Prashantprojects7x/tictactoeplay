@@ -83,50 +83,111 @@ export function findBestMoveForPlayer(board: Player[], player: "X" | "O"): numbe
   return empty[0];
 }
 
-export function playSound(type: "place" | "win" | "draw" | "coin" | "achievement", volume: number = 0.1) {
+// Shared AudioContext for performance
+let _audioCtx: AudioContext | null = null;
+function getAudioCtx(): AudioContext {
+  if (!_audioCtx || _audioCtx.state === "closed") _audioCtx = new AudioContext();
+  if (_audioCtx.state === "suspended") _audioCtx.resume();
+  return _audioCtx;
+}
+
+function createNote(ctx: AudioContext, freq: number, type: OscillatorType, vol: number, start: number, end: number, dest?: AudioNode) {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  osc.connect(gain);
+  gain.connect(dest || ctx.destination);
+  gain.gain.setValueAtTime(vol, start);
+  gain.gain.exponentialRampToValueAtTime(0.001, end);
+  osc.start(start);
+  osc.stop(end + 0.05);
+}
+
+export type SoundType = "place" | "win" | "loss" | "draw" | "coin" | "achievement" | "click" | "hover" | "powerup" | "error";
+
+export function playSound(type: SoundType, volume: number = 0.1) {
   try {
-    const ctx = new AudioContext();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    gain.gain.value = volume;
+    const ctx = getAudioCtx();
+    const t = ctx.currentTime;
 
     switch (type) {
-      case "place":
-        osc.frequency.value = 440 + Math.random() * 200;
-        osc.start(); osc.stop(ctx.currentTime + 0.08);
-        break;
-      case "win": {
-        osc.frequency.value = 587;
-        osc.start(); osc.stop(ctx.currentTime + 0.3);
-        const osc2 = ctx.createOscillator();
-        const g2 = ctx.createGain();
-        osc2.connect(g2); g2.connect(ctx.destination);
-        osc2.frequency.value = 880; g2.gain.value = volume;
-        osc2.start(ctx.currentTime + 0.15); osc2.stop(ctx.currentTime + 0.5);
+      case "place": {
+        // Crisp pop with harmonics
+        createNote(ctx, 520 + Math.random() * 80, "sine", volume, t, t + 0.06);
+        createNote(ctx, 1040 + Math.random() * 80, "sine", volume * 0.3, t, t + 0.04);
         break;
       }
-      case "draw":
-        osc.frequency.value = 300;
-        osc.start(); osc.stop(ctx.currentTime + 0.2);
+      case "win": {
+        // Triumphant arpeggio: C5 → E5 → G5 → C6
+        const notes = [523, 659, 784, 1047];
+        notes.forEach((freq, i) => {
+          createNote(ctx, freq, "sine", volume * 0.8, t + i * 0.1, t + i * 0.1 + 0.25);
+          createNote(ctx, freq * 2, "sine", volume * 0.15, t + i * 0.1, t + i * 0.1 + 0.15);
+        });
         break;
-      case "coin":
-        osc.frequency.value = 880;
-        gain.gain.setValueAtTime(0.001, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(volume, ctx.currentTime + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
-        osc.start(); osc.stop(ctx.currentTime + 0.3);
+      }
+      case "loss": {
+        // Descending minor: G4 → Eb4 → C4
+        const notes = [392, 311, 262];
+        notes.forEach((freq, i) => {
+          createNote(ctx, freq, "triangle", volume * 0.6, t + i * 0.15, t + i * 0.15 + 0.3);
+        });
         break;
-      case "achievement":
-        osc.frequency.value = 660;
-        osc.start(); osc.stop(ctx.currentTime + 0.15);
-        const o2 = ctx.createOscillator();
-        const g2b = ctx.createGain();
-        o2.connect(g2b); g2b.connect(ctx.destination);
-        o2.frequency.value = 990; g2b.gain.value = volume;
-        o2.start(ctx.currentTime + 0.1); o2.stop(ctx.currentTime + 0.3);
+      }
+      case "draw": {
+        // Neutral two-tone
+        createNote(ctx, 440, "triangle", volume * 0.5, t, t + 0.15);
+        createNote(ctx, 370, "triangle", volume * 0.5, t + 0.12, t + 0.3);
         break;
+      }
+      case "coin": {
+        // Bright sparkle
+        createNote(ctx, 1200, "sine", volume * 0.6, t, t + 0.08);
+        createNote(ctx, 1600, "sine", volume * 0.5, t + 0.05, t + 0.15);
+        createNote(ctx, 2000, "sine", volume * 0.3, t + 0.08, t + 0.2);
+        break;
+      }
+      case "achievement": {
+        // Fanfare: two rising chords
+        createNote(ctx, 523, "sine", volume * 0.7, t, t + 0.2);
+        createNote(ctx, 659, "sine", volume * 0.7, t, t + 0.2);
+        createNote(ctx, 784, "sine", volume * 0.7, t + 0.15, t + 0.4);
+        createNote(ctx, 1047, "sine", volume * 0.7, t + 0.15, t + 0.4);
+        createNote(ctx, 1319, "sine", volume * 0.4, t + 0.3, t + 0.55);
+        break;
+      }
+      case "click": {
+        // Subtle tick
+        createNote(ctx, 800, "square", volume * 0.15, t, t + 0.025);
+        break;
+      }
+      case "hover": {
+        // Ultra-soft blip
+        createNote(ctx, 600, "sine", volume * 0.08, t, t + 0.02);
+        break;
+      }
+      case "powerup": {
+        // Whoosh up
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(300, t);
+        osc.frequency.exponentialRampToValueAtTime(1200, t + 0.2);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        gain.gain.setValueAtTime(volume * 0.5, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+        osc.start(t);
+        osc.stop(t + 0.3);
+        break;
+      }
+      case "error": {
+        // Buzz
+        createNote(ctx, 150, "sawtooth", volume * 0.3, t, t + 0.12);
+        createNote(ctx, 140, "sawtooth", volume * 0.2, t + 0.06, t + 0.15);
+        break;
+      }
     }
   } catch { /* silence */ }
 }
