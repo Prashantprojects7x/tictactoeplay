@@ -982,7 +982,8 @@ export default function TicTacToe() {
             </button>
           )}
           <button onClick={reset}
-            className="flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground glow-primary transition-all hover:brightness-110 active:scale-95">
+            className="relative flex items-center gap-2 rounded-2xl bg-gradient-to-r from-primary to-[hsl(290,85%,58%)] px-7 py-3.5 text-sm font-bold text-primary-foreground glow-primary transition-all hover:brightness-110 hover:shadow-xl active:scale-95 overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
             <RotateCcw className="h-4 w-4" /> Play Again
           </button>
           {!isOnline && (
