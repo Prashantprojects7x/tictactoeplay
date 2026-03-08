@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Users can insert own battle pass" ON public.battle_pass;
