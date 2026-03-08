@@ -500,6 +500,61 @@ Deno.serve(async (req) => {
         return jsonResponse({ success: true, diamond_tokens: profile.diamond_tokens - 1 });
       }
 
+      case "claim_daily_reward": {
+        // Daily reward tiers (Day 1-7, then repeats)
+        const DAILY_REWARDS = [10, 20, 30, 40, 50, 75, 150];
+
+        const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+        const { data: existing } = await admin
+          .from("daily_rewards")
+          .select("*")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if (existing && existing.last_claim_date === today) {
+          return errorResponse("Already claimed today");
+        }
+
+        let streak = 1;
+        if (existing) {
+          const lastDate = new Date(existing.last_claim_date);
+          const todayDate = new Date(today);
+          const diffMs = todayDate.getTime() - lastDate.getTime();
+          const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+          streak = diffDays === 1 ? existing.current_streak + 1 : 1;
+        }
+
+        const rewardIndex = ((streak - 1) % 7);
+        const reward = DAILY_REWARDS[rewardIndex];
+
+        if (existing) {
+          await admin
+            .from("daily_rewards")
+            .update({ last_claim_date: today, current_streak: streak, total_claims: existing.total_claims + 1, updated_at: new Date().toISOString() })
+            .eq("user_id", userId);
+        } else {
+          // Use service role to insert (no client INSERT policy needed)
+          await admin
+            .from("daily_rewards")
+            .insert({ user_id: userId, last_claim_date: today, current_streak: streak, total_claims: 1 });
+        }
+
+        // Award coins
+        const profile = await getProfile(admin, userId);
+        await admin
+          .from("profiles")
+          .update({ coins: profile.coins + reward })
+          .eq("user_id", userId);
+
+        return jsonResponse({
+          success: true,
+          coins_awarded: reward,
+          current_streak: streak,
+          total_coins: profile.coins + reward,
+        });
+      }
+
       default:
         return errorResponse("Unknown action");
     }
