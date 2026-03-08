@@ -92,52 +92,64 @@ function FloatingParticles() {
   );
 }
 
+// ─── Theme-aware mark colors ────────────────────────────────────
+const THEME_MARK_COLORS: Record<BoardTheme, { x: [string, string]; o: [string, string]; xGlow: string; oGlow: string }> = {
+  default: { x: ["hsl(265,90%,72%)", "hsl(290,85%,70%)"], o: ["hsl(165,85%,55%)", "hsl(185,80%,50%)"], xGlow: "hsl(265,90%,62%)", oGlow: "hsl(165,80%,48%)" },
+  neon:    { x: ["hsl(330,100%,65%)", "hsl(350,100%,60%)"], o: ["hsl(120,100%,55%)", "hsl(150,100%,45%)"], xGlow: "hsl(330,100%,55%)", oGlow: "hsl(120,100%,50%)" },
+  ocean:   { x: ["hsl(200,100%,65%)", "hsl(220,100%,60%)"], o: ["hsl(40,100%,60%)", "hsl(50,100%,55%)"], xGlow: "hsl(200,100%,50%)", oGlow: "hsl(40,100%,55%)" },
+  sunset:  { x: ["hsl(25,100%,65%)", "hsl(10,100%,60%)"], o: ["hsl(280,80%,65%)", "hsl(300,80%,60%)"], xGlow: "hsl(25,100%,55%)", oGlow: "hsl(280,80%,55%)" },
+};
+
 // ─── SVG Marks with enhanced animations ─────────────────────────
-function XMark({ isWin, large }: { isWin: boolean; large?: boolean }) {
+function XMark({ isWin, large, theme = "default" }: { isWin: boolean; large?: boolean; theme?: BoardTheme }) {
+  const colors = THEME_MARK_COLORS[theme];
+  const gradId = `xGrad-${theme}`;
   return (
     <motion.svg viewBox="0 0 50 50" className={large ? "h-14 w-14 sm:h-18 sm:w-18 md:h-20 md:w-20" : "h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14"}
       initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 12 }}>
       <motion.line x1="12" y1="12" x2="38" y2="38"
-        stroke={isWin ? "hsl(48,100%,55%)" : "url(#xGrad)"}
+        stroke={isWin ? "hsl(48,100%,55%)" : `url(#${gradId})`}
         strokeWidth="4.5" strokeLinecap="round"
         initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
         transition={{ duration: 0.25 }}
-        filter={isWin ? "drop-shadow(0 0 6px hsl(48,100%,55%))" : "drop-shadow(0 0 4px hsl(265,90%,62%))"}
+        filter={isWin ? "drop-shadow(0 0 6px hsl(48,100%,55%))" : `drop-shadow(0 0 4px ${colors.xGlow})`}
       />
       <motion.line x1="38" y1="12" x2="12" y2="38"
-        stroke={isWin ? "hsl(48,100%,55%)" : "url(#xGrad)"}
+        stroke={isWin ? "hsl(48,100%,55%)" : `url(#${gradId})`}
         strokeWidth="4.5" strokeLinecap="round"
         initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
         transition={{ duration: 0.25, delay: 0.08 }}
-        filter={isWin ? "drop-shadow(0 0 6px hsl(48,100%,55%))" : "drop-shadow(0 0 4px hsl(265,90%,62%))"}
+        filter={isWin ? "drop-shadow(0 0 6px hsl(48,100%,55%))" : `drop-shadow(0 0 4px ${colors.xGlow})`}
       />
       <defs>
-        <linearGradient id="xGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="hsl(265,90%,72%)" />
-          <stop offset="100%" stopColor="hsl(290,85%,70%)" />
+        <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor={colors.x[0]} />
+          <stop offset="100%" stopColor={colors.x[1]} />
         </linearGradient>
       </defs>
     </motion.svg>
   );
 }
 
-function OMark({ isWin, large }: { isWin: boolean; large?: boolean }) {
+function OMark({ isWin, large, theme = "default" }: { isWin: boolean; large?: boolean; theme?: BoardTheme }) {
+  const colors = THEME_MARK_COLORS[theme];
+  const gradId = `oGrad-${theme}`;
   return (
     <motion.svg viewBox="0 0 50 50" className={large ? "h-14 w-14 sm:h-18 sm:w-18 md:h-20 md:w-20" : "h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14"}
       initial={{ scale: 0, rotate: 180 }} animate={{ scale: 1, rotate: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 12 }}>
       <motion.circle cx="25" cy="25" r="14" fill="none"
-        stroke={isWin ? "hsl(48,100%,55%)" : "url(#oGrad)"}
+        stroke={isWin ? "hsl(48,100%,55%)" : `url(#${gradId})`}
         strokeWidth="4.5" strokeLinecap="round"
         initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
         transition={{ duration: 0.35 }}
-        filter={isWin ? "drop-shadow(0 0 6px hsl(48,100%,55%))" : "drop-shadow(0 0 4px hsl(165,80%,48%))"}
+        filter={isWin ? "drop-shadow(0 0 6px hsl(48,100%,55%))" : `drop-shadow(0 0 4px ${colors.oGlow})`}
       />
       <defs>
-        <linearGradient id="oGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="hsl(165,85%,55%)" />
-          <stop offset="100%" stopColor="hsl(185,80%,50%)" />
+        <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor={colors.o[0]} />
+          <stop offset="100%" stopColor={colors.o[1]} />
         </linearGradient>
       </defs>
     </motion.svg>
