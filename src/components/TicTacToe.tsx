@@ -579,7 +579,7 @@ export default function TicTacToe() {
   }
 
   return (
-    <div className="relative flex min-h-screen animated-bg overflow-hidden">
+    <div className={`relative flex min-h-screen animated-bg overflow-hidden ${isFullscreen ? "fullscreen-game" : ""}`}>
       <FloatingParticles />
       <div className="pointer-events-none absolute inset-0 bg-grid-pattern opacity-30 z-0" />
 
