@@ -62,6 +62,8 @@ export default {
         "x-color": "hsl(var(--x-color))",
         "o-color": "hsl(var(--o-color))",
         "surface-glass": "hsl(var(--surface-glass))",
+        gold: "hsl(var(--gold))",
+        streak: "hsl(var(--streak))",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -82,11 +84,16 @@ export default {
           "80%": { transform: "scale(1.15)" },
           "100%": { transform: "scale(1)", opacity: "1" },
         },
+        "spin-slow": {
+          from: { transform: "rotate(0deg)" },
+          to: { transform: "rotate(360deg)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         pop: "pop 0.2s ease-out",
+        "spin-slow": "spin-slow 8s linear infinite",
       },
     },
   },

@@ -2,7 +2,8 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   RotateCcw, Monitor, Users, Trophy, Zap, Brain, Sparkles,
-  Volume2, VolumeX, Undo2, Redo2, Eye, Shield, BoltIcon, Timer, Menu, X,
+  Volume2, VolumeX, Undo2, Redo2, Eye, Shield, Timer, Menu, X,
+  Crown, Flame, Target, Swords,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { Player, Difficulty, BoardTheme, MoveRecord } from "./game/types";
@@ -17,48 +18,156 @@ import Sidebar from "./game/Sidebar";
 
 // ─── Confetti ──────────────────────────────────────────────────
 function Confetti() {
-  const particles = Array.from({ length: 40 }, (_, i) => ({
+  const particles = Array.from({ length: 60 }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
-    delay: Math.random() * 0.5,
-    duration: 1.5 + Math.random() * 2,
-    color: ["hsl(260,85%,65%)", "hsl(170,75%,50%)", "hsl(45,95%,55%)", "hsl(330,80%,60%)", "hsl(200,80%,60%)"][i % 5],
-    size: 4 + Math.random() * 6,
+    delay: Math.random() * 0.6,
+    duration: 1.5 + Math.random() * 2.5,
+    color: [
+      "hsl(265,90%,65%)", "hsl(165,80%,50%)", "hsl(48,100%,55%)",
+      "hsl(330,85%,60%)", "hsl(200,85%,60%)", "hsl(45,100%,70%)",
+    ][i % 6],
+    size: 3 + Math.random() * 8,
+    isCircle: Math.random() > 0.5,
   }));
   return (
     <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
       {particles.map((p) => (
         <motion.div
           key={p.id}
-          initial={{ y: -20, x: `${p.x}vw`, opacity: 1, rotate: 0 }}
-          animate={{ y: "110vh", opacity: 0, rotate: 360 + Math.random() * 360 }}
+          initial={{ y: -20, x: `${p.x}vw`, opacity: 1, rotate: 0, scale: 1 }}
+          animate={{ y: "110vh", opacity: 0, rotate: 720 * (Math.random() > 0.5 ? 1 : -1), scale: 0.3 }}
           transition={{ duration: p.duration, delay: p.delay, ease: "easeIn" }}
-          style={{ position: "absolute", width: p.size, height: p.size, borderRadius: p.size > 7 ? "50%" : "2px", backgroundColor: p.color }}
+          style={{
+            position: "absolute", width: p.size, height: p.size * (p.isCircle ? 1 : 1.5),
+            borderRadius: p.isCircle ? "50%" : "2px", backgroundColor: p.color,
+          }}
         />
       ))}
     </div>
   );
 }
 
-// ─── SVG Marks ──────────────────────────────────────────────────
+// ─── Floating particles background ──────────────────────────────
+function FloatingParticles() {
+  const particles = Array.from({ length: 20 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: 2 + Math.random() * 3,
+    duration: 10 + Math.random() * 20,
+    delay: Math.random() * 10,
+    opacity: 0.1 + Math.random() * 0.15,
+  }));
+  return (
+    <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
+      {particles.map((p) => (
+        <motion.div
+          key={p.id}
+          className="absolute rounded-full bg-primary"
+          style={{ width: p.size, height: p.size, left: `${p.x}%`, top: `${p.y}%`, opacity: p.opacity }}
+          animate={{ y: [0, -60, 0], x: [0, 20, -20, 0], opacity: [p.opacity, p.opacity * 2, p.opacity] }}
+          transition={{ duration: p.duration, delay: p.delay, repeat: Infinity, ease: "easeInOut" }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ─── SVG Marks with enhanced animations ─────────────────────────
 function XMark({ isWin }: { isWin: boolean }) {
   return (
-    <motion.svg viewBox="0 0 50 50" className={`h-12 w-12 sm:h-14 sm:w-14 ${isWin ? "drop-shadow-[0_0_8px_hsl(45,95%,55%)]" : ""}`}
+    <motion.svg viewBox="0 0 50 50" className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14"
       initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }}
-      transition={{ type: "spring", stiffness: 260, damping: 15 }}>
-      <motion.line x1="10" y1="10" x2="40" y2="40" stroke={isWin ? "hsl(45,95%,55%)" : "hsl(260,85%,70%)"} strokeWidth="4" strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.3 }} />
-      <motion.line x1="40" y1="10" x2="10" y2="40" stroke={isWin ? "hsl(45,95%,55%)" : "hsl(260,85%,70%)"} strokeWidth="4" strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.3, delay: 0.1 }} />
+      transition={{ type: "spring", stiffness: 300, damping: 12 }}>
+      <motion.line x1="12" y1="12" x2="38" y2="38"
+        stroke={isWin ? "hsl(48,100%,55%)" : "url(#xGrad)"}
+        strokeWidth="4.5" strokeLinecap="round"
+        initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
+        transition={{ duration: 0.25 }}
+        filter={isWin ? "drop-shadow(0 0 6px hsl(48,100%,55%))" : "drop-shadow(0 0 4px hsl(265,90%,62%))"}
+      />
+      <motion.line x1="38" y1="12" x2="12" y2="38"
+        stroke={isWin ? "hsl(48,100%,55%)" : "url(#xGrad)"}
+        strokeWidth="4.5" strokeLinecap="round"
+        initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
+        transition={{ duration: 0.25, delay: 0.08 }}
+        filter={isWin ? "drop-shadow(0 0 6px hsl(48,100%,55%))" : "drop-shadow(0 0 4px hsl(265,90%,62%))"}
+      />
+      <defs>
+        <linearGradient id="xGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="hsl(265,90%,72%)" />
+          <stop offset="100%" stopColor="hsl(290,85%,70%)" />
+        </linearGradient>
+      </defs>
     </motion.svg>
   );
 }
 
 function OMark({ isWin }: { isWin: boolean }) {
   return (
-    <motion.svg viewBox="0 0 50 50" className={`h-12 w-12 sm:h-14 sm:w-14 ${isWin ? "drop-shadow-[0_0_8px_hsl(45,95%,55%)]" : ""}`}
-      initial={{ scale: 0 }} animate={{ scale: 1 }}
-      transition={{ type: "spring", stiffness: 260, damping: 15 }}>
-      <motion.circle cx="25" cy="25" r="15" stroke={isWin ? "hsl(45,95%,55%)" : "hsl(170,75%,50%)"} strokeWidth="4" fill="none" strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.4 }} />
+    <motion.svg viewBox="0 0 50 50" className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14"
+      initial={{ scale: 0, rotate: 90 }} animate={{ scale: 1, rotate: 0 }}
+      transition={{ type: "spring", stiffness: 300, damping: 12 }}>
+      <motion.circle cx="25" cy="25" r="14"
+        stroke={isWin ? "hsl(48,100%,55%)" : "url(#oGrad)"}
+        strokeWidth="4.5" fill="none" strokeLinecap="round"
+        initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
+        transition={{ duration: 0.35 }}
+        filter={isWin ? "drop-shadow(0 0 6px hsl(48,100%,55%))" : "drop-shadow(0 0 4px hsl(165,80%,48%))"}
+      />
+      <defs>
+        <linearGradient id="oGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="hsl(165,80%,52%)" />
+          <stop offset="100%" stopColor="hsl(145,75%,58%)" />
+        </linearGradient>
+      </defs>
     </motion.svg>
+  );
+}
+
+// ─── XP Level display ───────────────────────────────────────────
+function XPDisplay({ totalWins }: { totalWins: number }) {
+  const level = Math.floor(totalWins / 5) + 1;
+  const xpInLevel = totalWins % 5;
+  const xpPercent = (xpInLevel / 5) * 100;
+
+  return (
+    <div className="flex items-center gap-2 w-full max-w-[200px]">
+      <div className="flex items-center gap-1">
+        <Crown className="h-3.5 w-3.5 text-gold" />
+        <span className="text-[10px] font-bold text-gold" style={{ fontFamily: "'JetBrains Mono'" }}>Lv.{level}</span>
+      </div>
+      <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
+        <motion.div
+          className="h-full rounded-full"
+          style={{ background: "linear-gradient(90deg, hsl(265,90%,62%), hsl(290,85%,65%))" }}
+          initial={{ width: 0 }}
+          animate={{ width: `${xpPercent}%` }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        />
+      </div>
+      <span className="text-[9px] text-muted-foreground font-mono">{xpInLevel}/5</span>
+    </div>
+  );
+}
+
+// ─── Turn indicator ─────────────────────────────────────────────
+function TurnIndicator({ isXTurn, gameOver }: { isXTurn: boolean; gameOver: boolean }) {
+  if (gameOver) return null;
+  return (
+    <div className="flex items-center gap-3">
+      <motion.div
+        className={`h-2 w-2 rounded-full ${isXTurn ? "bg-x-color" : "bg-muted"}`}
+        animate={isXTurn ? { scale: [1, 1.4, 1], opacity: [1, 0.7, 1] } : { scale: 1 }}
+        transition={{ duration: 1.2, repeat: isXTurn ? Infinity : 0 }}
+      />
+      <motion.div
+        className={`h-2 w-2 rounded-full ${!isXTurn ? "bg-o-color" : "bg-muted"}`}
+        animate={!isXTurn ? { scale: [1, 1.4, 1], opacity: [1, 0.7, 1] } : { scale: 1 }}
+        transition={{ duration: 1.2, repeat: !isXTurn ? Infinity : 0 }}
+      />
+    </div>
   );
 }
 
@@ -78,33 +187,28 @@ export default function TicTacToe() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Coins (local state synced with storage)
   const [coinsX, setCoinsX] = useState(() => getCoins("X"));
   const [coinsO, setCoinsO] = useState(() => getCoins("O"));
 
-  // Timer
   const [elapsedTime, setElapsedTime] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(Date.now());
 
-  // Move history for undo/redo
   const [moveHistory, setMoveHistory] = useState<MoveRecord[]>([]);
   const [redoStack, setRedoStack] = useState<MoveRecord[]>([]);
   const moveCountRef = useRef(0);
 
-  // Peek highlight
   const [peekCell, setPeekCell] = useState<number | null>(null);
-
-  // Shield cells
   const [shieldedCells, setShieldedCells] = useState<Record<number, { player: "X" | "O"; turns: number }>>({});
+  const [awaitingShield, setAwaitingShield] = useState(false);
 
   const { winner } = checkWinner(board);
   const isDraw = !winner && board.every(Boolean);
   const currentPlayer = isXTurn ? "X" : "O" as const;
+  const stats = getGameStats();
 
   const refreshSidebar = () => setRefreshKey((k) => k + 1);
 
-  // Add coins helper
   const addCoins = useCallback((player: "X" | "O", amount: number) => {
     const updated = addCoinsToStorage(player, amount);
     if (player === "X") setCoinsX(updated);
@@ -113,7 +217,6 @@ export default function TicTacToe() {
     refreshSidebar();
   }, [soundEnabled]);
 
-  // Check achievements
   const checkAchievements = useCallback((elapsed: number = 0) => {
     const stats = getGameStats();
     const toasts: string[] = [];
@@ -135,7 +238,6 @@ export default function TicTacToe() {
     refreshSidebar();
   }, [addCoins, soundEnabled]);
 
-  // Timer
   useEffect(() => {
     if (!gameOver) {
       startTimeRef.current = Date.now();
@@ -147,7 +249,6 @@ export default function TicTacToe() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [round, gameOver]);
 
-  // Daily login bonus
   useEffect(() => {
     const { isNew, bonus, streak } = checkDailyLogin();
     if (isNew && bonus > 0) {
@@ -163,7 +264,6 @@ export default function TicTacToe() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // End-of-game
   useEffect(() => {
     if (gameOver) return;
     if (winner) {
@@ -175,23 +275,10 @@ export default function TicTacToe() {
       setShowConfetti(true);
       if (soundEnabled) playSound("win", 0.1);
       setTimeout(() => setShowConfetti(false), 3500);
-
-      // Award coins + record
       addCoins(winner, 10);
       toast(`🎉 ${getPlayerName(winner)} wins! +10 coins`);
-
-      if (winner === "X" || !vsAI) {
-        recordWin(elapsed);
-      } else {
-        recordLoss();
-      }
-      addGameHistory({
-        outcome: vsAI && winner === "O" ? "loss" : "win",
-        time: elapsed,
-        date: Date.now(),
-        mode: vsAI ? "ai" : "pvp",
-        opponent: vsAI ? `AI (${difficulty})` : "Player",
-      });
+      if (winner === "X" || !vsAI) { recordWin(elapsed); } else { recordLoss(); }
+      addGameHistory({ outcome: vsAI && winner === "O" ? "loss" : "win", time: elapsed, date: Date.now(), mode: vsAI ? "ai" : "pvp", opponent: vsAI ? `AI (${difficulty})` : "Player" });
       checkAchievements(elapsed);
     } else if (isDraw) {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -199,18 +286,11 @@ export default function TicTacToe() {
       setGameOver(true);
       if (soundEnabled) playSound("draw", 0.06);
       recordDraw();
-      addGameHistory({
-        outcome: "draw",
-        time: Math.floor((Date.now() - startTimeRef.current) / 1000),
-        date: Date.now(),
-        mode: vsAI ? "ai" : "pvp",
-        opponent: vsAI ? `AI (${difficulty})` : "Player",
-      });
+      addGameHistory({ outcome: "draw", time: Math.floor((Date.now() - startTimeRef.current) / 1000), date: Date.now(), mode: vsAI ? "ai" : "pvp", opponent: vsAI ? `AI (${difficulty})` : "Player" });
       refreshSidebar();
     }
   }, [board, winner, isDraw, gameOver, soundEnabled, addCoins, vsAI, difficulty, checkAchievements]);
 
-  // AI move
   useEffect(() => {
     if (vsAI && !isXTurn && !winner && !isDraw && !gameOver) {
       const timeout = setTimeout(() => {
@@ -225,14 +305,8 @@ export default function TicTacToe() {
   const doMove = useCallback((i: number, aiMove = false) => {
     if (board[i] || winner || isDraw || gameOver) return;
     if (vsAI && !isXTurn && !aiMove) return;
-
-    // Check shield
     const shield = shieldedCells[i];
-    if (shield && shield.player !== currentPlayer) {
-      toast("🛡️ This cell is shielded!");
-      return;
-    }
-
+    if (shield && shield.player !== currentPlayer) { toast("🛡️ This cell is shielded!"); return; }
     const player = currentPlayer;
     const next = [...board];
     next[i] = player;
@@ -243,8 +317,6 @@ export default function TicTacToe() {
     setRedoStack([]);
     if (soundEnabled) playSound("place", 0.08);
     setPeekCell(null);
-
-    // Decay shields
     setShieldedCells((prev) => {
       const updated: typeof prev = {};
       for (const [key, val] of Object.entries(prev)) {
@@ -255,13 +327,11 @@ export default function TicTacToe() {
     });
   }, [board, isXTurn, winner, isDraw, vsAI, currentPlayer, soundEnabled, shieldedCells, gameOver]);
 
-  // Undo
   const undoMove = useCallback(() => {
     if (moveHistory.length === 0 || gameOver) return;
     const cost = 10;
     const playerCoins = currentPlayer === "X" ? coinsX : coinsO;
     if (playerCoins < cost) { toast(`Not enough coins (${cost} needed)`); return; }
-
     addCoins(currentPlayer, -cost);
     const last = moveHistory[moveHistory.length - 1];
     const newBoard = [...board];
@@ -273,13 +343,11 @@ export default function TicTacToe() {
     toast("↶ Move undone (-10 coins)");
   }, [moveHistory, gameOver, currentPlayer, coinsX, coinsO, addCoins, board]);
 
-  // Redo
   const redoMove = useCallback(() => {
     if (redoStack.length === 0 || gameOver) return;
     const cost = 10;
     const playerCoins = currentPlayer === "X" ? coinsX : coinsO;
     if (playerCoins < cost) { toast(`Not enough coins (${cost} needed)`); return; }
-
     addCoins(currentPlayer, -cost);
     const move = redoStack[redoStack.length - 1];
     const newBoard = [...board];
@@ -291,7 +359,6 @@ export default function TicTacToe() {
     toast("↷ Move redone (-10 coins)");
   }, [redoStack, gameOver, currentPlayer, coinsX, coinsO, addCoins, board]);
 
-  // Powerups
   const usePeek = () => {
     const cost = POWERUP_COSTS.peek;
     const coins = currentPlayer === "X" ? coinsX : coinsO;
@@ -299,21 +366,15 @@ export default function TicTacToe() {
     if (gameOver) return;
     addCoins(currentPlayer, -cost);
     const best = findBestMoveForPlayer(board, currentPlayer);
-    if (best !== null) {
-      setPeekCell(best);
-      setTimeout(() => setPeekCell(null), 2200);
-      toast("🔍 Best move highlighted!");
-    }
+    if (best !== null) { setPeekCell(best); setTimeout(() => setPeekCell(null), 2200); toast("🔍 Best move highlighted!"); }
   };
 
   const useShield = () => {
+    if (gameOver) return;
     toast("🛡️ Click an empty cell to place shield");
-    // We'll handle this via a state flag
     setAwaitingShield(true);
     setTimeout(() => setAwaitingShield(false), 8000);
   };
-
-  const [awaitingShield, setAwaitingShield] = useState(false);
 
   const handleCellClick = useCallback((i: number) => {
     if (awaitingShield) {
@@ -345,140 +406,155 @@ export default function TicTacToe() {
     setRound((r) => r + 1);
   };
 
-  const resetAll = () => {
-    reset();
-    setScore({ X: 0, O: 0, draws: 0 });
-    setRound(1);
-  };
+  const resetAll = () => { reset(); setScore({ X: 0, O: 0, draws: 0 }); setRound(1); };
+  const toggleMode = () => { setVsAI(!vsAI); resetAll(); };
 
-  const toggleMode = () => {
-    setVsAI(!vsAI);
-    resetAll();
-  };
-
-  const status = winner
-    ? `${getPlayerName(winner)} Wins!`
-    : isDraw
-    ? "It's a Draw!"
-    : `${getPlayerName(currentPlayer)}'s Turn`;
-
+  const status = winner ? `${getPlayerName(winner)} Wins!` : isDraw ? "It's a Draw!" : `${getPlayerName(currentPlayer)}'s Turn`;
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
-
-  const theme = BOARD_THEMES[boardTheme];
+  const movesMade = board.filter(Boolean).length;
 
   return (
-    <div className="relative flex min-h-screen bg-background bg-grid-pattern overflow-hidden">
-      {/* Background orbs */}
-      <div className="pointer-events-none absolute top-1/4 -left-32 h-64 w-64 rounded-full bg-primary/10 blur-[100px]" />
-      <div className="pointer-events-none absolute bottom-1/4 -right-32 h-64 w-64 rounded-full bg-accent/10 blur-[100px]" />
+    <div className="relative flex min-h-screen animated-bg overflow-hidden">
+      <FloatingParticles />
+      <div className="pointer-events-none absolute inset-0 bg-grid-pattern opacity-30 z-0" />
+
+      {/* Ambient glow orbs */}
+      <div className="pointer-events-none absolute top-[15%] left-[10%] h-80 w-80 rounded-full bg-primary/8 blur-[120px] z-0" />
+      <div className="pointer-events-none absolute bottom-[15%] right-[10%] h-80 w-80 rounded-full bg-accent/6 blur-[120px] z-0" />
+      <div className="pointer-events-none absolute top-[60%] left-[50%] h-48 w-48 rounded-full bg-gold/4 blur-[100px] z-0" />
 
       <AnimatePresence>{showConfetti && <Confetti />}</AnimatePresence>
 
-      {/* Main area */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-4 p-4">
-        {/* Header */}
-        <motion.div className="flex flex-col items-center gap-1" initial={{ y: -30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-          <h1 className="text-3xl font-bold tracking-tighter text-foreground sm:text-5xl" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-            <span className="text-gradient-x">Tic</span>
-            <span className="text-muted-foreground">-</span>
-            <span className="text-gradient-o">Tac</span>
-            <span className="text-muted-foreground">-</span>
-            <span className="text-foreground">Toe</span>
-          </h1>
-          <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-medium tracking-widest uppercase">
-            <span>Round {round}</span>
-            <span className="flex items-center gap-1"><Timer className="h-3 w-3" /> {formatTime(elapsedTime)}</span>
+      {/* Main game area */}
+      <div className="flex-1 flex flex-col items-center justify-center gap-5 p-4 sm:p-6 z-10 relative">
+
+        {/* Title */}
+        <motion.div className="flex flex-col items-center gap-2" initial={{ y: -40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }}>
+          <div className="flex items-center gap-2">
+            <Swords className="h-5 w-5 text-primary opacity-60" />
+            <h1 className="text-3xl font-black tracking-tighter sm:text-5xl" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              <span className="text-gradient-title">TicTacToe</span>
+            </h1>
+            <Swords className="h-5 w-5 text-accent opacity-60" />
           </div>
+          <div className="flex items-center gap-4 text-[10px] text-muted-foreground font-medium tracking-widest uppercase">
+            <span className="flex items-center gap-1"><Target className="h-3 w-3" /> Round {round}</span>
+            <span className="flex items-center gap-1"><Timer className="h-3 w-3" /> {formatTime(elapsedTime)}</span>
+            <span className="flex items-center gap-1"><Flame className="h-3 w-3 text-streak" /> {stats.winStreak}</span>
+          </div>
+          <XPDisplay totalWins={stats.wins} />
         </motion.div>
 
-        {/* Controls */}
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          <button onClick={toggleMode} className="glass-card flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium text-card-foreground transition-all hover:border-primary/50 active:scale-95">
+        {/* Controls row */}
+        <motion.div className="flex flex-wrap items-center justify-center gap-2" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
+          <button onClick={toggleMode} className="glass-card flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold text-card-foreground transition-all hover:border-primary/50 active:scale-95">
             {vsAI ? <Monitor className="h-3.5 w-3.5 text-primary" /> : <Users className="h-3.5 w-3.5 text-accent" />}
             {vsAI ? "vs AI" : "vs Human"}
           </button>
 
           {vsAI && (
-            <div className="flex">
+            <motion.div className="flex rounded-full overflow-hidden border border-border" initial={{ width: 0, opacity: 0 }} animate={{ width: "auto", opacity: 1 }}>
               {(["easy", "medium", "hard"] as Difficulty[]).map((d) => (
-                <button
-                  key={d}
-                  onClick={() => { setDifficulty(d); reset(); }}
-                  className={`px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider transition-all first:rounded-l-full last:rounded-r-full border border-border
-                    ${d === difficulty ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground hover:text-foreground"}`}
-                >
-                  {d === "easy" ? <Zap className="h-3 w-3 inline mr-0.5" /> : d === "medium" ? <Brain className="h-3 w-3 inline mr-0.5" /> : <Sparkles className="h-3 w-3 inline mr-0.5" />}
+                <button key={d} onClick={() => { setDifficulty(d); reset(); }}
+                  className={`px-3 py-2 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1
+                    ${d === difficulty ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"}`}>
+                  {d === "easy" ? <Zap className="h-3 w-3" /> : d === "medium" ? <Brain className="h-3 w-3" /> : <Sparkles className="h-3 w-3" />}
                   {d}
                 </button>
               ))}
-            </div>
+            </motion.div>
           )}
 
-          <button onClick={() => setSoundEnabled(!soundEnabled)} className="glass-card rounded-full p-1.5 text-muted-foreground hover:text-foreground active:scale-95">
+          <button onClick={() => setSoundEnabled(!soundEnabled)} className="glass-card rounded-full p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all">
             {soundEnabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
           </button>
 
-          {/* Mobile sidebar toggle */}
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="glass-card rounded-full p-1.5 text-muted-foreground hover:text-foreground active:scale-95 lg:hidden">
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="glass-card rounded-full p-2 text-muted-foreground hover:text-foreground active:scale-95 lg:hidden transition-all">
             {sidebarOpen ? <X className="h-3.5 w-3.5" /> : <Menu className="h-3.5 w-3.5" />}
           </button>
-        </div>
+        </motion.div>
 
         {/* Scoreboard */}
-        <motion.div className="glass-card flex items-stretch gap-0 rounded-2xl overflow-hidden" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-          <div className="flex flex-col items-center px-4 py-2 border-r border-border/50">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">🪙 {coinsX}</span>
-            <div className="flex items-center gap-1"><div className="h-1.5 w-1.5 rounded-full bg-x-color" /><span className="text-[10px] text-muted-foreground">{getPlayerName("X")}</span></div>
-            <span className="text-xl font-bold text-gradient-x" style={{ fontFamily: "'JetBrains Mono'" }}>{score.X}</span>
+        <motion.div className="glass-card-elevated flex items-stretch rounded-2xl overflow-hidden" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.15, type: "spring" }}>
+          {/* Player X */}
+          <div className={`flex flex-col items-center px-5 py-3 border-r border-border/30 transition-all ${isXTurn && !gameOver ? "bg-x-color/5" : ""}`}>
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <motion.div className={`h-2 w-2 rounded-full bg-x-color`} animate={isXTurn && !gameOver ? { scale: [1, 1.5, 1] } : {}} transition={{ duration: 1, repeat: Infinity }} />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{getPlayerName("X")}</span>
+            </div>
+            <motion.span key={`x-${score.X}`} className="text-2xl font-black text-gradient-x" style={{ fontFamily: "'JetBrains Mono'" }} initial={{ scale: 1.5, rotate: -10 }} animate={{ scale: 1, rotate: 0 }}>
+              {score.X}
+            </motion.span>
+            <span className="text-[9px] text-muted-foreground font-mono">🪙 {coinsX}</span>
           </div>
-          <div className="flex flex-col items-center px-4 py-2 border-r border-border/50">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Draws</span>
-            <span className="text-xl font-bold text-muted-foreground" style={{ fontFamily: "'JetBrains Mono'" }}>{score.draws}</span>
+
+          {/* Draws */}
+          <div className="flex flex-col items-center justify-center px-4 py-3 border-r border-border/30">
+            <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">Draws</span>
+            <motion.span key={`d-${score.draws}`} className="text-xl font-bold text-muted-foreground" style={{ fontFamily: "'JetBrains Mono'" }} initial={{ scale: 1.3 }} animate={{ scale: 1 }}>
+              {score.draws}
+            </motion.span>
+            <span className="text-[9px] text-muted-foreground">{movesMade} moves</span>
           </div>
-          <div className="flex flex-col items-center px-4 py-2">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">🪙 {coinsO}</span>
-            <div className="flex items-center gap-1"><div className="h-1.5 w-1.5 rounded-full bg-o-color" /><span className="text-[10px] text-muted-foreground">{getPlayerName("O")}</span></div>
-            <span className="text-xl font-bold text-gradient-o" style={{ fontFamily: "'JetBrains Mono'" }}>{score.O}</span>
+
+          {/* Player O */}
+          <div className={`flex flex-col items-center px-5 py-3 transition-all ${!isXTurn && !gameOver ? "bg-o-color/5" : ""}`}>
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <motion.div className={`h-2 w-2 rounded-full bg-o-color`} animate={!isXTurn && !gameOver ? { scale: [1, 1.5, 1] } : {}} transition={{ duration: 1, repeat: Infinity }} />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{getPlayerName("O")}</span>
+            </div>
+            <motion.span key={`o-${score.O}`} className="text-2xl font-black text-gradient-o" style={{ fontFamily: "'JetBrains Mono'" }} initial={{ scale: 1.5, rotate: 10 }} animate={{ scale: 1, rotate: 0 }}>
+              {score.O}
+            </motion.span>
+            <span className="text-[9px] text-muted-foreground font-mono">🪙 {coinsO}</span>
           </div>
         </motion.div>
 
-        {/* Status */}
-        <AnimatePresence mode="wait">
-          <motion.div key={status}
-            className={`flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold
-              ${winner ? "glass-card glow-win text-win-highlight" : isDraw ? "glass-card text-muted-foreground" : "text-foreground"}`}
-            initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 10, opacity: 0 }}>
-            {winner && <Trophy className="h-4 w-4" />}
-            {status}
-            {winner && " 🎉"}
-          </motion.div>
-        </AnimatePresence>
+        {/* Status + Turn indicator */}
+        <div className="flex flex-col items-center gap-2">
+          <TurnIndicator isXTurn={isXTurn} gameOver={gameOver} />
+          <AnimatePresence mode="wait">
+            <motion.div key={status}
+              className={`flex items-center gap-2.5 rounded-2xl px-5 py-2 text-sm font-bold
+                ${winner ? "glass-card-elevated glow-win text-win-highlight" : isDraw ? "glass-card text-muted-foreground" : "text-foreground"}`}
+              initial={{ y: -15, opacity: 0, scale: 0.9 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: 15, opacity: 0, scale: 0.9 }}>
+              {winner && <Trophy className="h-4 w-4" />}
+              {status}
+              {winner && <span className="text-lg">🎉</span>}
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
         {/* Board */}
-        <motion.div className="glass-card rounded-3xl p-3 sm:p-4" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.1, type: "spring", stiffness: 150 }}>
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <motion.div className="glass-card-elevated rounded-3xl p-4 sm:p-5 board-glow" initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, type: "spring", stiffness: 120 }}>
+          <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
             {board.map((cell, i) => {
               const isWinCell = winLine?.includes(i);
               const isPeek = peekCell === i;
               const isShielded = !!shieldedCells[i];
+              const row = Math.floor(i / 3);
+              const col = i % 3;
               return (
                 <motion.button
                   key={i}
                   onClick={() => handleCellClick(i)}
-                  whileHover={!cell && !winner && !isDraw ? { scale: 1.05 } : {}}
-                  whileTap={!cell && !winner && !isDraw ? { scale: 0.95 } : {}}
-                  className={`relative flex h-20 w-20 items-center justify-center rounded-2xl transition-all duration-300 sm:h-24 sm:w-24
+                  whileHover={!cell && !winner && !isDraw ? { scale: 1.06, y: -2 } : {}}
+                  whileTap={!cell && !winner && !isDraw ? { scale: 0.94 } : {}}
+                  initial={{ opacity: 0, scale: 0.5, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ delay: row * 0.06 + col * 0.06, type: "spring", stiffness: 200 }}
+                  className={`relative flex h-[72px] w-[72px] items-center justify-center rounded-2xl transition-all duration-300 sm:h-[88px] sm:w-[88px] md:h-[96px] md:w-[96px]
                     ${isWinCell
-                      ? "bg-win-highlight/15 glow-win border-2 border-win-highlight/50"
+                      ? "bg-win-highlight/12 glow-win border-2 border-win-highlight/40"
                       : isPeek
-                      ? "bg-win-highlight/10 border-2 border-win-highlight/40 animate-pulse"
+                      ? "bg-win-highlight/8 border-2 border-win-highlight/30 animate-pulse"
                       : isShielded
-                      ? "bg-primary/5 border-2 border-dashed border-primary/40"
+                      ? "bg-primary/8 border-2 border-dashed border-primary/30"
                       : cell === "X"
-                      ? "bg-x-color/5 border-2 border-x-color/20 glow-x"
+                      ? "bg-x-color/6 border-2 border-x-color/15 glow-x"
                       : cell === "O"
-                      ? "bg-o-color/5 border-2 border-o-color/20 glow-o"
-                      : "bg-secondary/50 border-2 border-border/50 hover:bg-cell-hover hover:border-primary/40 cursor-pointer"
+                      ? "bg-o-color/6 border-2 border-o-color/15 glow-o"
+                      : "bg-secondary/40 border-2 border-border/40 hover:bg-cell-hover hover:border-primary/30 cursor-pointer"
                     }
                     ${cell || winner || isDraw ? "cursor-default" : ""}
                   `}
@@ -488,80 +564,82 @@ export default function TicTacToe() {
                     {cell === "X" && <XMark isWin={!!isWinCell} />}
                     {cell === "O" && <OMark isWin={!!isWinCell} />}
                   </AnimatePresence>
-                  {isShielded && <span className="absolute top-0.5 right-1 text-[10px]">🛡️</span>}
-                  {isPeek && !cell && <span className="text-[10px] text-win-highlight animate-pulse">💡</span>}
+                  {isShielded && (
+                    <motion.span className="absolute top-1 right-1.5 text-xs" animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 2, repeat: Infinity }}>🛡️</motion.span>
+                  )}
+                  {isPeek && !cell && (
+                    <motion.span className="text-lg" animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 1, repeat: Infinity }}>💡</motion.span>
+                  )}
                 </motion.button>
               );
             })}
           </div>
         </motion.div>
 
-        {/* Power-ups */}
-        <div className="flex flex-wrap gap-1.5 justify-center">
-          <button onClick={usePeek} disabled={gameOver} className="glass-card flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[10px] font-semibold text-muted-foreground hover:text-foreground transition-all active:scale-95 disabled:opacity-40">
-            <Eye className="h-3 w-3" /> Peek ({POWERUP_COSTS.peek}🪙)
+        {/* Power-ups row */}
+        <motion.div className="flex flex-wrap gap-2 justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+          <button onClick={usePeek} disabled={gameOver}
+            className="glass-card flex items-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all active:scale-95 disabled:opacity-30">
+            <Eye className="h-3.5 w-3.5 text-gold" /> Peek
+            <span className="text-[9px] text-muted-foreground/70 ml-0.5">{POWERUP_COSTS.peek}🪙</span>
           </button>
-          <button onClick={useShield} disabled={gameOver} className="glass-card flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[10px] font-semibold text-muted-foreground hover:text-foreground transition-all active:scale-95 disabled:opacity-40">
-            <Shield className="h-3 w-3" /> Shield ({POWERUP_COSTS.shield}🪙)
+          <button onClick={useShield} disabled={gameOver}
+            className="glass-card flex items-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all active:scale-95 disabled:opacity-30">
+            <Shield className="h-3.5 w-3.5 text-primary" /> Shield
+            <span className="text-[9px] text-muted-foreground/70 ml-0.5">{POWERUP_COSTS.shield}🪙</span>
           </button>
-        </div>
+        </motion.div>
 
         {/* Action buttons */}
-        <div className="flex items-center gap-2">
+        <motion.div className="flex items-center gap-2.5" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.35 }}>
           <button onClick={undoMove} disabled={moveHistory.length === 0 || gameOver}
-            className="glass-card flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-all active:scale-95 disabled:opacity-30">
-            <Undo2 className="h-3.5 w-3.5" /> Undo (10🪙)
+            className="glass-card flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-all active:scale-95 disabled:opacity-25">
+            <Undo2 className="h-3.5 w-3.5" /> Undo
           </button>
           <button onClick={reset}
-            className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl active:scale-95">
+            className="flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground glow-primary transition-all hover:brightness-110 active:scale-95">
             <RotateCcw className="h-4 w-4" /> Play Again
           </button>
           <button onClick={redoMove} disabled={redoStack.length === 0 || gameOver}
-            className="glass-card flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-all active:scale-95 disabled:opacity-30">
-            <Redo2 className="h-3.5 w-3.5" /> Redo (10🪙)
+            className="glass-card flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-all active:scale-95 disabled:opacity-25">
+            <Redo2 className="h-3.5 w-3.5" /> Redo
           </button>
-        </div>
+        </motion.div>
 
-        <button onClick={resetAll} className="text-[10px] text-muted-foreground hover:text-foreground transition-colors">
+        <button onClick={resetAll} className="text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors">
           Reset Everything
         </button>
       </div>
 
       {/* Desktop sidebar */}
-      <div className="hidden lg:flex w-72 border-l border-border/50 bg-card/30 backdrop-blur-sm p-4 overflow-y-auto max-h-screen">
-        <Sidebar
-          coinsX={coinsX} coinsO={coinsO} boardTheme={boardTheme} setBoardTheme={setBoardTheme}
+      <div className="hidden lg:block w-[280px] border-l border-border/30 bg-card/20 backdrop-blur-sm p-4 overflow-y-auto max-h-screen z-10">
+        <Sidebar coinsX={coinsX} coinsO={coinsO} boardTheme={boardTheme} setBoardTheme={setBoardTheme}
           difficulty={difficulty} setDifficulty={(d) => { setDifficulty(d); reset(); }}
           soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled}
           onResetCoins={() => { resetCoinsStorage(); setCoinsX(0); setCoinsO(0); refreshSidebar(); toast("Coins reset"); }}
-          vsAI={vsAI} refreshKey={refreshKey}
-        />
+          vsAI={vsAI} refreshKey={refreshKey} />
       </div>
 
       {/* Mobile sidebar overlay */}
       <AnimatePresence>
         {sidebarOpen && (
-          <motion.div
-            initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
+          <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 bottom-0 w-80 max-w-[90vw] bg-card border-l border-border z-40 p-4 overflow-y-auto lg:hidden"
-          >
-            <button onClick={() => setSidebarOpen(false)} className="absolute top-3 right-3 text-muted-foreground hover:text-foreground">
+            className="fixed right-0 top-0 bottom-0 w-80 max-w-[90vw] bg-card/95 backdrop-blur-xl border-l border-border/50 z-40 p-4 overflow-y-auto lg:hidden">
+            <button onClick={() => setSidebarOpen(false)} className="absolute top-3 right-3 text-muted-foreground hover:text-foreground p-1">
               <X className="h-5 w-5" />
             </button>
             <div className="mt-8">
-              <Sidebar
-                coinsX={coinsX} coinsO={coinsO} boardTheme={boardTheme} setBoardTheme={setBoardTheme}
+              <Sidebar coinsX={coinsX} coinsO={coinsO} boardTheme={boardTheme} setBoardTheme={setBoardTheme}
                 difficulty={difficulty} setDifficulty={(d) => { setDifficulty(d); reset(); }}
                 soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled}
                 onResetCoins={() => { resetCoinsStorage(); setCoinsX(0); setCoinsO(0); refreshSidebar(); toast("Coins reset"); }}
-                vsAI={vsAI} refreshKey={refreshKey}
-              />
+                vsAI={vsAI} refreshKey={refreshKey} />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-      {sidebarOpen && <div className="fixed inset-0 bg-background/50 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />}
+      {sidebarOpen && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-background/60 backdrop-blur-sm z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />}
     </div>
   );
 }
