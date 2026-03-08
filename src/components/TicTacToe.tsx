@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   RotateCcw, Monitor, Users, Trophy, Zap, Brain, Sparkles,
   Volume2, VolumeX, Undo2, Redo2, Eye, Shield, Timer, Menu, X,
-  Crown, Flame, Target, Swords, Globe, LogIn, LogOut, User, Maximize, Minimize,
+  Crown, Flame, Target, Swords, Globe, LogIn, LogOut, User, Maximize, Minimize, ShoppingBag,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -671,6 +671,11 @@ export default function TicTacToe() {
           <button onClick={() => navigate("/leaderboard")}
             className="glass-card flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all">
             <Trophy className="h-3.5 w-3.5 text-[hsl(var(--gold))]" /> Leaderboard
+          </button>
+
+          <button onClick={() => navigate("/shop")}
+            className="glass-card flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all">
+            <ShoppingBag className="h-3.5 w-3.5 text-primary" /> Shop
           </button>
 
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="glass-card rounded-full p-2 text-muted-foreground hover:text-foreground active:scale-95 lg:hidden transition-all">
