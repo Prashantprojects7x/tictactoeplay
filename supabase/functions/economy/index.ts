@@ -43,13 +43,21 @@ function getAdminClient() {
 
 async function getUserId(req: Request): Promise<string | null> {
   const authHeader = req.headers.get("authorization");
-  if (!authHeader) return null;
+  if (!authHeader?.startsWith("Bearer ")) return null;
   const token = authHeader.replace("Bearer ", "");
-  const anonClient = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!
-  );
-  const { data } = await anonClient.auth.getUser(token);
+
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  const url = Deno.env.get("SUPABASE_URL");
+  if (!anonKey || !url) {
+    console.error("Missing SUPABASE_URL or SUPABASE_ANON_KEY");
+    return null;
+  }
+
+  const anonClient = createClient(url, anonKey, {
+    global: { headers: { Authorization: authHeader } },
+  });
+  const { data, error } = await anonClient.auth.getUser(token);
+  if (error) { console.error("Auth error:", error.message); return null; }
   return data?.user?.id ?? null;
 }
 
