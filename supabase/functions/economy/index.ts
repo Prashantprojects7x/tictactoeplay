@@ -24,6 +24,28 @@ function processXpGain(currentXp: number, currentLevel: number, xpGained: number
   return { newXp: xp, newLevel: level, leveledUp: levelsGained > 0, levelsGained };
 }
 
+// Server-side price catalog (canonical prices — never trust client)
+const ITEM_CATALOG: Record<string, { type: string; price: number; unlockLevel?: number }> = {
+  theme_cyber: { type: "theme", price: 80, unlockLevel: 3 },
+  theme_forest: { type: "theme", price: 80, unlockLevel: 3 },
+  theme_galaxy: { type: "theme", price: 150, unlockLevel: 8 },
+  theme_lava: { type: "theme", price: 150, unlockLevel: 8 },
+  theme_arctic: { type: "theme", price: 120, unlockLevel: 5 },
+  theme_gold: { type: "theme", price: 300, unlockLevel: 15 },
+  theme_retro: { type: "theme", price: 100, unlockLevel: 5 },
+  theme_cherry: { type: "theme", price: 200, unlockLevel: 10 },
+  avatar_ninja: { type: "avatar", price: 50 },
+  avatar_dragon: { type: "avatar", price: 100, unlockLevel: 5 },
+  avatar_wizard: { type: "avatar", price: 100, unlockLevel: 5 },
+  avatar_ghost: { type: "avatar", price: 60 },
+  avatar_crown: { type: "avatar", price: 200, unlockLevel: 10 },
+  avatar_ufo: { type: "avatar", price: 150, unlockLevel: 8 },
+  avatar_skull: { type: "avatar", price: 80, unlockLevel: 3 },
+  avatar_phoenix: { type: "avatar", price: 350, unlockLevel: 20 },
+  avatar_diamond: { type: "avatar", price: 500, unlockLevel: 25 },
+  avatar_samurai: { type: "avatar", price: 120, unlockLevel: 7 },
+};
+
 // Battle pass constants
 const BATTLE_PASS_COST = 1000;
 const BATTLE_PASS_SEASON = 1;
