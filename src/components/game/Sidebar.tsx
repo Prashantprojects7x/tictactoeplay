@@ -25,7 +25,7 @@ interface SidebarProps {
 
 export default function Sidebar({
   coinsX, coinsO, boardTheme, setBoardTheme, difficulty, setDifficulty,
-  soundEnabled, setSoundEnabled, onResetCoins, vsAI, refreshKey,
+  soundEnabled, setSoundEnabled, vsAI, refreshKey,
 }: SidebarProps) {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     stats: true, achievements: true, history: false, coins: false, settings: false, names: false,
