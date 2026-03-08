@@ -61,23 +61,28 @@ function Confetti() {
 
 // ─── Floating particles background ──────────────────────────────
 function FloatingParticles() {
-  const particles = Array.from({ length: 20 }, (_, i) => ({
+  const particles = Array.from({ length: 30 }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
     y: Math.random() * 100,
-    size: 2 + Math.random() * 3,
-    duration: 10 + Math.random() * 20,
-    delay: Math.random() * 10,
-    opacity: 0.1 + Math.random() * 0.15,
+    size: 1.5 + Math.random() * 3,
+    duration: 12 + Math.random() * 25,
+    delay: Math.random() * 12,
+    opacity: 0.06 + Math.random() * 0.12,
+    color: i % 3 === 0 ? "bg-primary" : i % 3 === 1 ? "bg-accent" : "bg-[hsl(var(--gold))]",
   }));
   return (
     <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
       {particles.map((p) => (
         <motion.div
           key={p.id}
-          className="absolute rounded-full bg-primary"
+          className={`absolute rounded-full ${p.color}`}
           style={{ width: p.size, height: p.size, left: `${p.x}%`, top: `${p.y}%`, opacity: p.opacity }}
-          animate={{ y: [0, -60, 0], x: [0, 20, -20, 0], opacity: [p.opacity, p.opacity * 2, p.opacity] }}
+          animate={{
+            y: [0, -80, 0],
+            x: [0, 30 * (p.id % 2 === 0 ? 1 : -1), 0],
+            opacity: [p.opacity, p.opacity * 2.5, p.opacity],
+          }}
           transition={{ duration: p.duration, delay: p.delay, repeat: Infinity, ease: "easeInOut" }}
         />
       ))}
