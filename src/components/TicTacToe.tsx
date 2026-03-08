@@ -715,6 +715,11 @@ export default function TicTacToe() {
             <ShoppingBag className="h-3.5 w-3.5 text-primary" /> Shop
           </button>
 
+          <button onClick={() => navigate("/friends")}
+            className="glass-card flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all">
+            <UserPlus className="h-3.5 w-3.5 text-accent" /> Friends
+          </button>
+
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="glass-card rounded-full p-2 text-muted-foreground hover:text-foreground active:scale-95 lg:hidden transition-all">
             {sidebarOpen ? <X className="h-3.5 w-3.5" /> : <Menu className="h-3.5 w-3.5" />}
           </button>
