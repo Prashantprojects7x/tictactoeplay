@@ -2,19 +2,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
-import Leaderboard from "./pages/Leaderboard";
-import Profile from "./pages/Profile";
-import Shop from "./pages/Shop";
-import Friends from "./pages/Friends";
-import BattlePass from "./pages/BattlePass";
-import Tournament from "./pages/Tournament";
-import NotFound from "./pages/NotFound";
+import AnimatedRoutes from "@/components/AnimatedRoutes";
 
 const queryClient = new QueryClient();
 
@@ -25,19 +15,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/leaderboard" element={<Leaderboard />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/friends" element={<Friends />} />
-            <Route path="/battlepass" element={<BattlePass />} />
-            <Route path="/tournament" element={<Tournament />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AnimatedRoutes />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
