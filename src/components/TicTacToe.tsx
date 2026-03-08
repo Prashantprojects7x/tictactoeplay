@@ -361,6 +361,10 @@ export default function TicTacToe() {
           // Check for level-up by comparing with previous
         }
       });
+      // Battle Pass XP on wins (Local & Online only)
+      if (shouldAwardCoins && outcome === "win") {
+        addBattlePassXp(xpGained);
+      }
 
       checkAchievements(elapsed);
     } else if (isDraw) {
