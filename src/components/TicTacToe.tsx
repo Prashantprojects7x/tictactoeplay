@@ -239,18 +239,27 @@ export default function TicTacToe() {
     mp.sendChat(text, id, isEmoji);
   }, [mp]);
 
+  // Tournament match tracking
+  const tournamentIdRef = useRef<string | null>(null);
+  const tournamentMatchIdRef = useRef<string | null>(null);
+
   // Handle URL-based challenge/join
   useEffect(() => {
     const joinCode = searchParams.get("join");
     const challengeUserId = searchParams.get("challenge");
+    const tournamentId = searchParams.get("tournament");
+    const matchId = searchParams.get("matchId");
+
+    if (tournamentId) tournamentIdRef.current = tournamentId;
+    if (matchId) tournamentMatchIdRef.current = matchId;
+
     if (joinCode) {
       setGameMode("online");
       setShowLobby(false);
       mp.joinRoom(joinCode);
       setSearchParams({}, { replace: true });
-      toast("⚔️ Joining challenge match...");
+      toast(tournamentId ? "🏟️ Joining tournament match..." : "⚔️ Joining challenge match...");
     } else if (challengeUserId && user) {
-      // Create room and send challenge
       const code = mp.createRoom();
       setGameMode("online");
       setShowLobby(false);
