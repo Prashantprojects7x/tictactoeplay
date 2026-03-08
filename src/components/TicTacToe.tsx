@@ -297,13 +297,18 @@ export default function TicTacToe() {
 
   const refreshSidebar = () => setRefreshKey((k) => k + 1);
 
+  // Save sfxVolume
+  useEffect(() => { localStorage.setItem("sfx-volume", String(sfxVolume)); }, [sfxVolume]);
+
+  const sfxVol = soundEnabled ? sfxVolume * 0.2 : 0;
+
   const addCoins = useCallback((player: "X" | "O", amount: number) => {
     const updated = addCoinsToStorage(player, amount);
     if (player === "X") setCoinsX(updated);
     else setCoinsO(updated);
-    if (amount > 0 && soundEnabled) playSound("coin", 0.08);
+    if (amount > 0 && soundEnabled) playSound("coin", sfxVol);
     refreshSidebar();
-  }, [soundEnabled]);
+  }, [soundEnabled, sfxVol]);
 
   const checkAchievements = useCallback((elapsed: number = 0) => {
     const stats = getGameStats();
