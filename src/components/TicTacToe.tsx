@@ -651,11 +651,10 @@ export default function TicTacToe() {
           </button>
 
           {user ? (
-            <button onClick={async () => { await signOut(); toast("Signed out"); }}
+            <button onClick={() => navigate("/profile")}
               className="glass-card flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all">
               <User className="h-3.5 w-3.5 text-accent" />
               <span className="hidden sm:inline max-w-[80px] truncate">{user.email?.split("@")[0]}</span>
-              <LogOut className="h-3 w-3 opacity-50" />
             </button>
           ) : (
             <button onClick={() => navigate("/auth")}
