@@ -441,7 +441,6 @@ export default function TicTacToe() {
       }
 
       if (shouldAwardCoins) {
-        addCoinsToProfile(10);
         addCoins(winner, 10);
         toast(`🎉 ${getPlayerName(winner)} wins! +10 coins credited to your account`);
       } else {
