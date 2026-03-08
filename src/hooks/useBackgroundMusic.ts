@@ -1,11 +1,22 @@
-import { useRef, useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useRef } from "react";
 
 const MUSIC_SRC = "/audio/background-music.mp3";
 
-export function useBackgroundMusic() {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const hasInteracted = useRef(false);
+// Module-level singleton — survives component re-mounts
+let _audio: HTMLAudioElement | null = null;
+let _hasInteracted = false;
 
+function getAudio(): HTMLAudioElement {
+  if (!_audio) {
+    _audio = new Audio(MUSIC_SRC);
+    _audio.loop = true;
+    _audio.preload = "auto";
+    _audio.volume = parseFloat(localStorage.getItem("music-volume") || "0.3");
+  }
+  return _audio;
+}
+
+export function useBackgroundMusic() {
   const [musicVolume, setMusicVolume] = useState(() => {
     const saved = localStorage.getItem("music-volume");
     return saved !== null ? parseFloat(saved) : 0.3;
@@ -15,50 +26,51 @@ export function useBackgroundMusic() {
     return saved !== null ? saved === "true" : true;
   });
   const [isPlaying, setIsPlaying] = useState(false);
+  const mountedRef = useRef(true);
 
-  // Create audio element once via ref
+  // Track play state from the singleton
   useEffect(() => {
-    if (!audioRef.current) {
-      const audio = new Audio(MUSIC_SRC);
-      audio.loop = true;
-      audio.preload = "auto";
-      audio.volume = parseFloat(localStorage.getItem("music-volume") || "0.3");
-      audioRef.current = audio;
-      audio.addEventListener("play", () => setIsPlaying(true));
-      audio.addEventListener("pause", () => setIsPlaying(false));
-    }
+    mountedRef.current = true;
+    const audio = getAudio();
+    const onPlay = () => { if (mountedRef.current) setIsPlaying(true); };
+    const onPause = () => { if (mountedRef.current) setIsPlaying(false); };
+    audio.addEventListener("play", onPlay);
+    audio.addEventListener("pause", onPause);
+    // Sync initial state
+    setIsPlaying(!audio.paused);
     return () => {
-      // Don't destroy on unmount to survive HMR
+      mountedRef.current = false;
+      audio.removeEventListener("play", onPlay);
+      audio.removeEventListener("pause", onPause);
     };
   }, []);
 
   // Sync volume
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = Math.max(0, Math.min(1, musicVolume));
-    }
+    const audio = getAudio();
+    audio.volume = Math.max(0, Math.min(1, musicVolume));
     localStorage.setItem("music-volume", String(musicVolume));
   }, [musicVolume]);
 
   // Sync enabled state
   useEffect(() => {
     localStorage.setItem("music-enabled", String(musicEnabled));
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (musicEnabled && hasInteracted.current) {
-      audio.play().catch(() => {});
+    const audio = getAudio();
+    if (musicEnabled && _hasInteracted) {
+      if (audio.paused) audio.play().catch(() => {});
     } else if (!musicEnabled) {
       audio.pause();
     }
   }, [musicEnabled]);
 
-  // Start on first user click (autoplay policy)
+  // Start on first user interaction (autoplay policy)
   useEffect(() => {
     const handler = () => {
-      if (hasInteracted.current) return;
-      hasInteracted.current = true;
-      if (musicEnabled && audioRef.current) {
-        audioRef.current.play().catch(() => {});
+      if (_hasInteracted) return;
+      _hasInteracted = true;
+      const audio = getAudio();
+      if (musicEnabled && audio.paused) {
+        audio.play().catch(() => {});
       }
     };
     document.addEventListener("click", handler);
