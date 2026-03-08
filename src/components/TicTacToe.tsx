@@ -185,6 +185,7 @@ type GameMode = "local" | "ai" | "online";
 export default function TicTacToe() {
   const { user, signOut } = useAuth();
   const { syncGameResult, addCoinsToProfile } = useProfileSync();
+  const { addBattlePassXp } = useBattlePass();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const challenges = useChallenges();
