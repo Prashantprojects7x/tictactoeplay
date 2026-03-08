@@ -106,7 +106,7 @@ function XMark({ isWin, large, theme = "default" }: { isWin: boolean; large?: bo
   const colors = THEME_MARK_COLORS[theme];
   const gradId = `xGrad-${theme}`;
   return (
-    <motion.svg viewBox="0 0 50 50" className={large ? "h-14 w-14 sm:h-18 sm:w-18 md:h-20 md:w-20" : "h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14"}
+    <motion.svg viewBox="0 0 50 50" className={large ? "h-16 w-16 sm:h-18 sm:w-18 md:h-20 md:w-20" : "h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14"}
       initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 12 }}>
       <motion.line x1="12" y1="12" x2="38" y2="38"
