@@ -21,6 +21,7 @@ import MultiplayerLobby from "./game/MultiplayerLobby";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfileSync } from "@/hooks/useProfileSync";
 import { useChallenges } from "@/hooks/useChallenges";
+import { useBattlePass } from "@/hooks/useBattlePass";
 import ChallengeNotification from "./game/ChallengeNotification";
 import { calculateXpGain, processXpGain, getLevelTitle, xpForLevel } from "./game/progression";
 
@@ -184,6 +185,7 @@ type GameMode = "local" | "ai" | "online";
 export default function TicTacToe() {
   const { user, signOut } = useAuth();
   const { syncGameResult, addCoinsToProfile } = useProfileSync();
+  const { addBattlePassXp } = useBattlePass();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const challenges = useChallenges();
@@ -359,6 +361,10 @@ export default function TicTacToe() {
           // Check for level-up by comparing with previous
         }
       });
+      // Battle Pass XP on wins (Local & Online only)
+      if (shouldAwardCoins && outcome === "win") {
+        addBattlePassXp(xpGained);
+      }
 
       checkAchievements(elapsed);
     } else if (isDraw) {
@@ -729,6 +735,11 @@ export default function TicTacToe() {
           <button onClick={() => navigate("/friends")}
             className="glass-card flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all">
             <UserPlus className="h-3.5 w-3.5 text-accent" /> Friends
+          </button>
+
+          <button onClick={() => navigate("/battlepass")}
+            className="glass-card flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all">
+            <Sparkles className="h-3.5 w-3.5 text-[hsl(var(--gold))]" /> Battle Pass
           </button>
 
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="glass-card rounded-full p-2 text-muted-foreground hover:text-foreground active:scale-95 lg:hidden transition-all">
