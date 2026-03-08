@@ -6,7 +6,7 @@ export const TOTAL_TIERS = 20;
 export interface BattlePassTier {
   tier: number;
   reward: string;
-  type: "coins" | "avatar" | "theme" | "title" | "xp_boost";
+  type: "coins" | "avatar" | "theme" | "title" | "xp_boost" | "diamond_token";
   value: string | number;
   icon: string;
   rarity: "common" | "rare" | "epic" | "legendary";
