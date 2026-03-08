@@ -506,7 +506,7 @@ export default function TicTacToe() {
     setIsXTurn(!isXTurn);
     setMoveHistory((h) => [...h, { index: i, player, moveNumber: moveCountRef.current, timestamp: Date.now() }]);
     setRedoStack([]);
-    if (soundEnabled) playSound("place", 0.08);
+    if (soundEnabled) playSound("place", sfxVol);
     setPeekCell(null);
     setShieldedCells((prev) => {
       const updated: typeof prev = {};
