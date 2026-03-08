@@ -354,7 +354,6 @@ export default function TicTacToe() {
       setWinLine(checkWinner(board).line);
       setGameOver(true);
       setShowConfetti(true);
-      if (soundEnabled) playSound("win", 0.1);
       setTimeout(() => setShowConfetti(false), 3500);
       let outcome: "win" | "loss" = "win";
       let mode = "pvp";
