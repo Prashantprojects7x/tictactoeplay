@@ -593,6 +593,7 @@ export default function TicTacToe() {
   }, []);
 
   const reset = () => {
+    if (soundEnabled) playSound("click", 0.08);
     resetBoard();
     if (isOnline) mp.sendReset();
   };
