@@ -77,6 +77,9 @@ export function useMultiplayer() {
           setState((s) => ({ ...s, opponentJoined: false }));
           onOpponentLeaveRef.current?.();
           break;
+        case "chat":
+          onChatRef.current?.(payload.text, payload.id, payload.isEmoji);
+          break;
       }
     });
 
