@@ -72,4 +72,4 @@ export const BOARD_THEMES: Record<BoardTheme, { label: string; accent: string; c
   sunset: { label: "Sunset", accent: "25 100% 55%", cellBg: "15 20% 14%" },
 };
 
-export const POWERUP_COSTS = { peek: 3, extra: 6, shield: 4 };
+export const POWERUP_COSTS = { peek: 50, extra: 6, shield: 50 };
