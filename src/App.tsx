@@ -33,6 +33,7 @@ const App = () => (
             <Route path="/shop" element={<Shop />} />
             <Route path="/friends" element={<Friends />} />
             <Route path="/battlepass" element={<BattlePass />} />
+            <Route path="/tournament" element={<Tournament />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<NotFound />} />
