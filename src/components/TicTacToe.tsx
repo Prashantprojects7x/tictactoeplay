@@ -939,10 +939,11 @@ export default function TicTacToe() {
 
         {/* Board */}
         <motion.div
-          className={`glass-card-elevated rounded-3xl board-glow ${isFullscreen ? "p-6 sm:p-8" : "p-4 sm:p-5"} ${isOnline && !isMyTurn && !gameOver ? "opacity-80" : ""}`}
+          className={`glass-card-elevated rounded-3xl ${isFullscreen ? "p-6 sm:p-8" : "p-4 sm:p-5"} ${isOnline && !isMyTurn && !gameOver ? "opacity-80" : ""}`}
           style={{
             "--theme-accent": BOARD_THEMES[boardTheme].accent,
             "--theme-cell-bg": BOARD_THEMES[boardTheme].cellBg,
+            boxShadow: `0 0 40px hsl(${BOARD_THEMES[boardTheme].accent} / 0.15), 0 0 80px hsl(${BOARD_THEMES[boardTheme].accent} / 0.05)`,
           } as React.CSSProperties}
           initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, type: "spring", stiffness: 120 }}>
           <div className={`grid grid-cols-3 ${isFullscreen ? "gap-3 sm:gap-4" : "gap-2.5 sm:gap-3"}`}>
