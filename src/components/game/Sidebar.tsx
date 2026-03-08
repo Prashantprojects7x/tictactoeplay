@@ -19,7 +19,6 @@ interface SidebarProps {
   setDifficulty: (d: Difficulty) => void;
   soundEnabled: boolean;
   setSoundEnabled: (v: boolean) => void;
-  onResetCoins: () => void;
   vsAI: boolean;
   refreshKey: number;
 }
