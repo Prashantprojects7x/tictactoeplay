@@ -45,27 +45,16 @@ export function useShop() {
     if (!user) { toast("Sign in to purchase items"); return false; }
     if (coins < price) { toast("Not enough coins!"); return false; }
 
-    // Deduct coins
-    const { error: coinErr } = await supabase
-      .from("profiles")
-      .update({ coins: coins - price })
-      .eq("user_id", user.id);
+    const { data, error } = await supabase.functions.invoke("economy", {
+      body: { action: "purchase_item", item_id: itemId, item_type: itemType, price },
+    });
 
-    if (coinErr) { toast("Failed to deduct coins"); return false; }
-
-    // Insert purchase
-    const { error: purchaseErr } = await supabase
-      .from("user_purchases")
-      .insert({ user_id: user.id, item_id: itemId, item_type: itemType });
-
-    if (purchaseErr) {
-      // Refund coins
-      await supabase.from("profiles").update({ coins }).eq("user_id", user.id);
-      toast("Purchase failed");
+    if (error || data?.error) {
+      toast(data?.error || "Purchase failed");
       return false;
     }
 
-    setCoins((c) => c - price);
+    setCoins(data.coins);
     await fetchData();
     toast(`🎉 Purchased! -${price} coins`);
     return true;
@@ -74,14 +63,13 @@ export function useShop() {
   const equipItem = useCallback(async (itemId: string, itemType: "theme" | "avatar") => {
     if (!user) return;
 
-    // Unequip all of same type first
+    // Equip/unequip only changes the `equipped` boolean — not economy columns, so direct write is safe
     await supabase
       .from("user_purchases")
       .update({ equipped: false })
       .eq("user_id", user.id)
       .eq("item_type", itemType);
 
-    // Equip selected
     await supabase
       .from("user_purchases")
       .update({ equipped: true })
