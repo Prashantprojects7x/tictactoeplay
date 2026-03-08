@@ -946,6 +946,7 @@ export default function TicTacToe() {
         {isOnline && mp.state.connected && (
           <GameChat messages={chatMessages} onSend={handleSendChat} myRole={mp.state.myRole} />
         )}
+      </div>
 
       {/* Desktop sidebar — hidden in fullscreen */}
       {!isFullscreen && (
