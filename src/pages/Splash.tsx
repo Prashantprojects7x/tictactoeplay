@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import gameLogo from "@/assets/game-logo.png";
+import gameLogo from "@/assets/game-logo-optimized.webp";
 
 export default function Splash() {
   const [phase, setPhase] = useState<"logo" | "burst" | "done">("logo");
@@ -148,6 +148,8 @@ export default function Splash() {
         <motion.img
           src={gameLogo}
           alt="TicTacToe"
+          width={180}
+          height={180}
           className="relative z-10 rounded-[2rem]"
           style={{ width: 180, height: 180 }}
           initial={{ scale: 0, rotate: -30, opacity: 0 }}
