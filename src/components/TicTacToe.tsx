@@ -941,13 +941,11 @@ export default function TicTacToe() {
             Leave Room
           </button>
         )}
-      </div>
 
-      {/* In-game chat (online only) */}
-      {isOnline && mp.state.connected && (
-        <GameChat messages={chatMessages} onSend={handleSendChat} myRole={mp.state.myRole} />
-      )}
-      </div>
+        {/* In-game chat (online only) */}
+        {isOnline && mp.state.connected && (
+          <GameChat messages={chatMessages} onSend={handleSendChat} myRole={mp.state.myRole} />
+        )}
 
       {/* Desktop sidebar — hidden in fullscreen */}
       {!isFullscreen && (
