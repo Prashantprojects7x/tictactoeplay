@@ -144,6 +144,14 @@ export function useMultiplayer() {
     });
   }, []);
 
+  const sendChat = useCallback((text: string, id: string, isEmoji: boolean) => {
+    channelRef.current?.send({
+      type: "broadcast",
+      event: "game",
+      payload: { type: "chat", text, id, isEmoji },
+    });
+  }, []);
+
   const leaveRoom = useCallback(() => {
     cleanup();
   }, [cleanup]);
