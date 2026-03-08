@@ -61,6 +61,7 @@ export default {
         "cell-hover": "hsl(var(--cell-hover))",
         "x-color": "hsl(var(--x-color))",
         "o-color": "hsl(var(--o-color))",
+        "surface-glass": "hsl(var(--surface-glass))",
       },
       borderRadius: {
         lg: "var(--radius)",
