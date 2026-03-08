@@ -11,6 +11,7 @@ import Shop from "@/pages/Shop";
 import Friends from "@/pages/Friends";
 import BattlePass from "@/pages/BattlePass";
 import Tournament from "@/pages/Tournament";
+import Achievements from "@/pages/Achievements";
 import NotFound from "@/pages/NotFound";
 
 export default function AnimatedRoutes() {
