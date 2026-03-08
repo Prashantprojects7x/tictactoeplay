@@ -869,7 +869,6 @@ export default function TicTacToe() {
           <Sidebar coinsX={coinsX} coinsO={coinsO} boardTheme={boardTheme} setBoardTheme={setBoardTheme}
             difficulty={difficulty} setDifficulty={(d) => { setDifficulty(d); resetBoard(); }}
             soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled}
-            onResetCoins={() => { resetCoinsStorage(); setCoinsX(0); setCoinsO(0); refreshSidebar(); toast("Coins reset"); }}
             vsAI={vsAI} refreshKey={refreshKey} />
         </div>
       )}
