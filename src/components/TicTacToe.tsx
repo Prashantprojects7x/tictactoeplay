@@ -794,8 +794,8 @@ export default function TicTacToe() {
                   disabled={!canClick}
                 >
                   <AnimatePresence>
-                    {cell === "X" && <XMark isWin={!!isWinCell} />}
-                    {cell === "O" && <OMark isWin={!!isWinCell} />}
+                    {cell === "X" && <XMark isWin={!!isWinCell} large={isFullscreen} />}
+                    {cell === "O" && <OMark isWin={!!isWinCell} large={isFullscreen} />}
                   </AnimatePresence>
                   {isShielded && (
                     <motion.span className="absolute top-1 right-1.5 text-xs" animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 2, repeat: Infinity }}>🛡️</motion.span>
