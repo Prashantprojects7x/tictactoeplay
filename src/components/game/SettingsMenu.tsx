@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Settings, Volume2, VolumeX, Music, Music2, X as XIcon } from "lucide-react";
 import { useState } from "react";
