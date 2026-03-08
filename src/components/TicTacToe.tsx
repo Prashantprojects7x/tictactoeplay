@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   RotateCcw, Monitor, Users, Trophy, Zap, Brain, Sparkles,
   Volume2, VolumeX, Undo2, Redo2, Eye, Shield, Timer, Menu, X,
-  Crown, Flame, Target, Swords, Globe, LogIn, LogOut, User, Maximize, Minimize, ShoppingBag, UserPlus,
+  Crown, Flame, Target, Swords, Globe, LogIn, LogOut, User, Maximize, Minimize, ShoppingBag, UserPlus, Medal,
 } from "lucide-react";
 import SettingsMenu from "./game/SettingsMenu";
 import { useBackgroundMusic } from "@/hooks/useBackgroundMusic";
