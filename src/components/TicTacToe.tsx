@@ -600,6 +600,7 @@ export default function TicTacToe() {
   const resetAll = () => { resetBoard(); setScore({ X: 0, O: 0, draws: 0 }); setRound(1); };
 
   const switchMode = (mode: GameMode) => {
+    if (soundEnabled) playSound("click", 0.08);
     if (isOnline) mp.leaveRoom();
     setGameMode(mode);
     setShowLobby(mode === "online");
