@@ -899,44 +899,44 @@ export default function TicTacToe() {
         {/* Scoreboard */}
         <motion.div className="glass-card-elevated flex items-stretch rounded-2xl overflow-hidden" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.15, type: "spring" }}>
           {/* Player X */}
-          <div className={`flex flex-col items-center px-6 py-4 border-r border-border/20 transition-all duration-500 ${isXTurn && !gameOver ? "score-active-x" : ""}`}>
-            <div className="flex items-center gap-1.5 mb-1">
-              <motion.div className="h-2.5 w-2.5 rounded-full bg-x-color"
+          <div className={`flex flex-col items-center px-3 sm:px-6 py-2.5 sm:py-4 border-r border-border/20 transition-all duration-500 ${isXTurn && !gameOver ? "score-active-x" : ""}`}>
+            <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
+              <motion.div className="h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-x-color"
                 animate={isXTurn && !gameOver ? { scale: [1, 1.6, 1], boxShadow: ["0 0 0px hsl(265 90% 72%)", "0 0 12px hsl(265 90% 72%)", "0 0 0px hsl(265 90% 72%)"] } : {}}
                 transition={{ duration: 1.2, repeat: Infinity }} />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                {isOnline && mp.state.myRole === "X" ? "You (X)" : getPlayerName("X")}
+              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                {isOnline && mp.state.myRole === "X" ? "You" : getPlayerName("X")}
               </span>
             </div>
-            <motion.span key={`x-${score.X}`} className="text-3xl font-black text-gradient-x" style={{ fontFamily: "'JetBrains Mono'" }} initial={{ scale: 1.5, rotate: -10 }} animate={{ scale: 1, rotate: 0 }}>
+            <motion.span key={`x-${score.X}`} className="text-2xl sm:text-3xl font-black text-gradient-x" style={{ fontFamily: "'JetBrains Mono'" }} initial={{ scale: 1.5, rotate: -10 }} animate={{ scale: 1, rotate: 0 }}>
               {score.X}
             </motion.span>
-            <span className="text-[9px] text-muted-foreground/60 font-mono mt-0.5">🪙 {coinsX}</span>
+            <span className="text-[8px] sm:text-[9px] text-muted-foreground/60 font-mono mt-0.5">🪙 {coinsX}</span>
           </div>
 
           {/* Draws — center with VS */}
-          <div className="flex flex-col items-center justify-center px-5 py-4 border-r border-border/20 relative">
-            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 mb-1">VS</span>
-            <motion.span key={`d-${score.draws}`} className="text-xl font-bold text-muted-foreground/70" style={{ fontFamily: "'JetBrains Mono'" }} initial={{ scale: 1.3 }} animate={{ scale: 1 }}>
+          <div className="flex flex-col items-center justify-center px-3 sm:px-5 py-2.5 sm:py-4 border-r border-border/20 relative">
+            <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 mb-0.5 sm:mb-1">VS</span>
+            <motion.span key={`d-${score.draws}`} className="text-lg sm:text-xl font-bold text-muted-foreground/70" style={{ fontFamily: "'JetBrains Mono'" }} initial={{ scale: 1.3 }} animate={{ scale: 1 }}>
               {score.draws}
             </motion.span>
-            <span className="text-[8px] text-muted-foreground/40 font-medium mt-0.5">{movesMade} moves</span>
+            <span className="text-[7px] sm:text-[8px] text-muted-foreground/40 font-medium mt-0.5">{movesMade} moves</span>
           </div>
 
           {/* Player O */}
-          <div className={`flex flex-col items-center px-6 py-4 transition-all duration-500 ${!isXTurn && !gameOver ? "score-active-o" : ""}`}>
-            <div className="flex items-center gap-1.5 mb-1">
-              <motion.div className="h-2.5 w-2.5 rounded-full bg-o-color"
+          <div className={`flex flex-col items-center px-3 sm:px-6 py-2.5 sm:py-4 transition-all duration-500 ${!isXTurn && !gameOver ? "score-active-o" : ""}`}>
+            <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
+              <motion.div className="h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-o-color"
                 animate={!isXTurn && !gameOver ? { scale: [1, 1.6, 1], boxShadow: ["0 0 0px hsl(165 80% 52%)", "0 0 12px hsl(165 80% 52%)", "0 0 0px hsl(165 80% 52%)"] } : {}}
                 transition={{ duration: 1.2, repeat: Infinity }} />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                {isOnline && mp.state.myRole === "O" ? "You (O)" : getPlayerName("O")}
+              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                {isOnline && mp.state.myRole === "O" ? "You" : getPlayerName("O")}
               </span>
             </div>
-            <motion.span key={`o-${score.O}`} className="text-3xl font-black text-gradient-o" style={{ fontFamily: "'JetBrains Mono'" }} initial={{ scale: 1.5, rotate: 10 }} animate={{ scale: 1, rotate: 0 }}>
+            <motion.span key={`o-${score.O}`} className="text-2xl sm:text-3xl font-black text-gradient-o" style={{ fontFamily: "'JetBrains Mono'" }} initial={{ scale: 1.5, rotate: 10 }} animate={{ scale: 1, rotate: 0 }}>
               {score.O}
             </motion.span>
-            <span className="text-[9px] text-muted-foreground/60 font-mono mt-0.5">🪙 {coinsO}</span>
+            <span className="text-[8px] sm:text-[9px] text-muted-foreground/60 font-mono mt-0.5">🪙 {coinsO}</span>
           </div>
         </motion.div>
 
