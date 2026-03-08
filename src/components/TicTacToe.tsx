@@ -752,9 +752,9 @@ export default function TicTacToe() {
         </div>
 
         {/* Board */}
-        <motion.div className={`glass-card-elevated rounded-3xl p-4 sm:p-5 board-glow ${isOnline && !isMyTurn && !gameOver ? "opacity-80" : ""}`}
+        <motion.div className={`glass-card-elevated rounded-3xl board-glow ${isFullscreen ? "p-6 sm:p-8" : "p-4 sm:p-5"} ${isOnline && !isMyTurn && !gameOver ? "opacity-80" : ""}`}
           initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, type: "spring", stiffness: 120 }}>
-          <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+          <div className={`grid grid-cols-3 ${isFullscreen ? "gap-3 sm:gap-4" : "gap-2.5 sm:gap-3"}`}>
             {board.map((cell, i) => {
               const isWinCell = winLine?.includes(i);
               const isPeek = peekCell === i;
@@ -771,7 +771,11 @@ export default function TicTacToe() {
                   initial={{ opacity: 0, scale: 0.5, y: 20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ delay: row * 0.06 + col * 0.06, type: "spring", stiffness: 200 }}
-                  className={`relative flex h-[72px] w-[72px] items-center justify-center rounded-2xl transition-all duration-300 sm:h-[88px] sm:w-[88px] md:h-[96px] md:w-[96px]
+                  className={`relative flex items-center justify-center rounded-2xl transition-all duration-300
+                    ${isFullscreen
+                      ? "h-[100px] w-[100px] sm:h-[130px] sm:w-[130px] md:h-[150px] md:w-[150px]"
+                      : "h-[72px] w-[72px] sm:h-[88px] sm:w-[88px] md:h-[96px] md:w-[96px]"
+                    }
                     ${isWinCell
                       ? "bg-win-highlight/12 glow-win border-2 border-win-highlight/40"
                       : isPeek
