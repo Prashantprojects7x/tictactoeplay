@@ -19,6 +19,8 @@ import Sidebar from "./game/Sidebar";
 import { useMultiplayer } from "./game/useMultiplayer";
 import MultiplayerLobby from "./game/MultiplayerLobby";
 import { useAuth } from "@/contexts/AuthContext";
+import { useProfileSync } from "@/hooks/useProfileSync";
+import { calculateXpGain, processXpGain, getLevelTitle, xpForLevel } from "./game/progression";
 
 // ─── Confetti ──────────────────────────────────────────────────
 function Confetti() {
@@ -179,6 +181,7 @@ type GameMode = "local" | "ai" | "online";
 // ─── Main Component ─────────────────────────────────────────────
 export default function TicTacToe() {
   const { user, signOut } = useAuth();
+  const { syncGameResult } = useProfileSync();
   const navigate = useNavigate();
   const [board, setBoard] = useState<Player[]>(Array(9).fill(null));
   const [isXTurn, setIsXTurn] = useState(true);
@@ -293,25 +296,47 @@ export default function TicTacToe() {
       addCoins(winner, 10);
       toast(`🎉 ${getPlayerName(winner)} wins! +10 coins`);
 
+      let outcome: "win" | "loss" = "win";
+      let mode = "pvp";
+      let opponent = "Player";
+
       if (isOnline) {
         const myWin = winner === mp.state.myRole;
+        outcome = myWin ? "win" : "loss";
         if (myWin) recordWin(elapsed); else recordLoss();
-        addGameHistory({ outcome: myWin ? "win" : "loss", time: elapsed, date: Date.now(), mode: "online", opponent: "Online Player" });
+        mode = "online"; opponent = "Online Player";
       } else if (vsAI) {
+        outcome = winner === "X" ? "win" : "loss";
         if (winner === "X") recordWin(elapsed); else recordLoss();
-        addGameHistory({ outcome: winner === "X" ? "win" : "loss", time: elapsed, date: Date.now(), mode: "ai", opponent: `AI (${difficulty})` });
+        mode = "ai"; opponent = `AI (${difficulty})`;
       } else {
         recordWin(elapsed);
-        addGameHistory({ outcome: "win", time: elapsed, date: Date.now(), mode: "pvp", opponent: "Player" });
       }
+      addGameHistory({ outcome, time: elapsed, date: Date.now(), mode, opponent });
+
+      // XP gain & database sync
+      const xpGained = calculateXpGain(outcome, elapsed, vsAI ? difficulty : undefined);
+      toast(`⚡ +${xpGained} XP`);
+      syncGameResult(outcome, elapsed, xpGained).then((updated) => {
+        if (updated && updated.level > (updated.level - 1)) {
+          // Check for level-up by comparing with previous
+        }
+      });
+
       checkAchievements(elapsed);
     } else if (isDraw) {
+      const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
       if (timerRef.current) clearInterval(timerRef.current);
       setScore((s) => ({ ...s, draws: s.draws + 1 }));
       setGameOver(true);
       if (soundEnabled) playSound("draw", 0.06);
       recordDraw();
-      addGameHistory({ outcome: "draw", time: Math.floor((Date.now() - startTimeRef.current) / 1000), date: Date.now(), mode: isOnline ? "online" : vsAI ? "ai" : "pvp", opponent: isOnline ? "Online Player" : vsAI ? `AI (${difficulty})` : "Player" });
+      addGameHistory({ outcome: "draw", time: elapsed, date: Date.now(), mode: isOnline ? "online" : vsAI ? "ai" : "pvp", opponent: isOnline ? "Online Player" : vsAI ? `AI (${difficulty})` : "Player" });
+
+      const xpGained = calculateXpGain("draw", elapsed);
+      toast(`⚡ +${xpGained} XP`);
+      syncGameResult("draw", elapsed, xpGained);
+
       refreshSidebar();
     }
   }, [board, winner, isDraw, gameOver, soundEnabled, addCoins, vsAI, isOnline, difficulty, checkAchievements, mp.state.myRole]);
@@ -626,11 +651,10 @@ export default function TicTacToe() {
           </button>
 
           {user ? (
-            <button onClick={async () => { await signOut(); toast("Signed out"); }}
+            <button onClick={() => navigate("/profile")}
               className="glass-card flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all">
               <User className="h-3.5 w-3.5 text-accent" />
               <span className="hidden sm:inline max-w-[80px] truncate">{user.email?.split("@")[0]}</span>
-              <LogOut className="h-3 w-3 opacity-50" />
             </button>
           ) : (
             <button onClick={() => navigate("/auth")}
