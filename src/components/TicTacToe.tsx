@@ -963,17 +963,25 @@ export default function TicTacToe() {
                   initial={{ opacity: 0, scale: 0.5, y: 20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ delay: row * 0.06 + col * 0.06, type: "spring", stiffness: 200 }}
-                  style={{
-                    backgroundColor: !isWinCell && !isPeek && !isShielded && !cell
-                      ? `hsl(${BOARD_THEMES[boardTheme].cellBg} / 0.6)`
-                      : undefined,
-                    borderColor: !isWinCell && !isPeek && !isShielded && !cell && canClick
-                      ? `hsl(${BOARD_THEMES[boardTheme].accent} / 0.2)`
-                      : undefined,
-                    boxShadow: !isWinCell && !isPeek && !isShielded && !cell && canClick
-                      ? `inset 0 0 20px hsl(${BOARD_THEMES[boardTheme].accent} / 0.05)`
-                      : undefined,
-                  }}
+                  style={(() => {
+                    const themeColors = THEME_MARK_COLORS[boardTheme];
+                    const themeBg = BOARD_THEMES[boardTheme];
+                    if (isWinCell || isPeek || isShielded) return {};
+                    if (cell === "X") return {
+                      backgroundColor: `hsl(${themeBg.cellBg} / 0.5)`,
+                      boxShadow: `inset 0 0 20px ${themeColors.xGlow}15, 0 0 12px ${themeColors.xGlow}10`,
+                    };
+                    if (cell === "O") return {
+                      backgroundColor: `hsl(${themeBg.cellBg} / 0.5)`,
+                      boxShadow: `inset 0 0 20px ${themeColors.oGlow}15, 0 0 12px ${themeColors.oGlow}10`,
+                    };
+                    if (!cell) return {
+                      backgroundColor: `hsl(${themeBg.cellBg} / 0.6)`,
+                      borderColor: canClick ? `hsl(${themeBg.accent} / 0.2)` : undefined,
+                      boxShadow: canClick ? `inset 0 0 20px hsl(${themeBg.accent} / 0.05)` : undefined,
+                    };
+                    return {};
+                  })()}
                   className={`relative flex items-center justify-center rounded-2xl transition-all duration-300
                     ${isFullscreen
                       ? "h-[100px] w-[100px] sm:h-[130px] sm:w-[130px] md:h-[150px] md:w-[150px]"
