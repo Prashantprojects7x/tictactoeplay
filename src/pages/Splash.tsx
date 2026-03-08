@@ -150,6 +150,8 @@ export default function Splash() {
           alt="TicTacToe"
           width={180}
           height={180}
+          // @ts-ignore
+          fetchpriority="high"
           className="relative z-10 rounded-[2rem]"
           style={{ width: 180, height: 180 }}
           initial={{ scale: 0, rotate: -30, opacity: 0 }}
