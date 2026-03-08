@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      friendships: {
+        Row: {
+          addressee_id: string
+          created_at: string
+          id: string
+          requester_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          addressee_id: string
+          created_at?: string
+          id?: string
+          requester_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          addressee_id?: string
+          created_at?: string
+          id?: string
+          requester_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      game_challenges: {
+        Row: {
+          challenged_id: string
+          challenger_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          room_code: string
+          status: string
+        }
+        Insert: {
+          challenged_id: string
+          challenger_id: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          room_code: string
+          status?: string
+        }
+        Update: {
+          challenged_id?: string
+          challenger_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          room_code?: string
+          status?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -21,6 +78,7 @@ export type Database = {
           coins: number
           created_at: string
           display_name: string | null
+          friend_code: string | null
           id: string
           level: number
           max_streak: number
@@ -37,6 +95,7 @@ export type Database = {
           coins?: number
           created_at?: string
           display_name?: string | null
+          friend_code?: string | null
           id?: string
           level?: number
           max_streak?: number
@@ -53,6 +112,7 @@ export type Database = {
           coins?: number
           created_at?: string
           display_name?: string | null
+          friend_code?: string | null
           id?: string
           level?: number
           max_streak?: number

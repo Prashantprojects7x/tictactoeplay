@@ -3,10 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   RotateCcw, Monitor, Users, Trophy, Zap, Brain, Sparkles,
   Volume2, VolumeX, Undo2, Redo2, Eye, Shield, Timer, Menu, X,
-  Crown, Flame, Target, Swords, Globe, LogIn, LogOut, User, Maximize, Minimize, ShoppingBag,
+  Crown, Flame, Target, Swords, Globe, LogIn, LogOut, User, Maximize, Minimize, ShoppingBag, UserPlus,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import type { Player, Difficulty, BoardTheme, MoveRecord } from "./game/types";
 import { BOARD_THEMES, POWERUP_COSTS, ACHIEVEMENT_DEFS } from "./game/types";
 import { checkWinner, getAIMove, findBestMoveForPlayer, playSound } from "./game/engine";
@@ -20,6 +20,8 @@ import { useMultiplayer } from "./game/useMultiplayer";
 import MultiplayerLobby from "./game/MultiplayerLobby";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfileSync } from "@/hooks/useProfileSync";
+import { useChallenges } from "@/hooks/useChallenges";
+import ChallengeNotification from "./game/ChallengeNotification";
 import { calculateXpGain, processXpGain, getLevelTitle, xpForLevel } from "./game/progression";
 
 // ─── Confetti ──────────────────────────────────────────────────
@@ -183,6 +185,8 @@ export default function TicTacToe() {
   const { user, signOut } = useAuth();
   const { syncGameResult } = useProfileSync();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const challenges = useChallenges();
   const [board, setBoard] = useState<Player[]>(Array(9).fill(null));
   const [isXTurn, setIsXTurn] = useState(true);
   const [winLine, setWinLine] = useState<number[] | null>(null);
@@ -216,6 +220,27 @@ export default function TicTacToe() {
   // Multiplayer
   const mp = useMultiplayer();
   const [showLobby, setShowLobby] = useState(false);
+
+  // Handle URL-based challenge/join
+  useEffect(() => {
+    const joinCode = searchParams.get("join");
+    const challengeUserId = searchParams.get("challenge");
+    if (joinCode) {
+      setGameMode("online");
+      setShowLobby(false);
+      mp.joinRoom(joinCode);
+      setSearchParams({}, { replace: true });
+      toast("⚔️ Joining challenge match...");
+    } else if (challengeUserId && user) {
+      // Create room and send challenge
+      const code = mp.createRoom();
+      setGameMode("online");
+      setShowLobby(false);
+      challenges.sendChallenge(challengeUserId, code);
+      setSearchParams({}, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const vsAI = gameMode === "ai";
   const isOnline = gameMode === "online";
@@ -590,6 +615,18 @@ export default function TicTacToe() {
 
       <AnimatePresence>{showConfetti && <Confetti />}</AnimatePresence>
 
+      {/* Challenge notification */}
+      <AnimatePresence>
+        {challenges.pendingChallenge && (
+          <ChallengeNotification
+            challengerName={challenges.pendingChallenge.challengerName}
+            challengerAvatar={challenges.pendingChallenge.challengerAvatar}
+            onAccept={() => challenges.acceptChallenge(challenges.pendingChallenge.id, challenges.pendingChallenge.room_code)}
+            onDecline={() => challenges.declineChallenge(challenges.pendingChallenge.id)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Main game area */}
       <div className="flex-1 flex flex-col items-center justify-center gap-5 p-4 sm:p-6 z-10 relative">
 
@@ -676,6 +713,11 @@ export default function TicTacToe() {
           <button onClick={() => navigate("/shop")}
             className="glass-card flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all">
             <ShoppingBag className="h-3.5 w-3.5 text-primary" /> Shop
+          </button>
+
+          <button onClick={() => navigate("/friends")}
+            className="glass-card flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all">
+            <UserPlus className="h-3.5 w-3.5 text-accent" /> Friends
           </button>
 
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="glass-card rounded-full p-2 text-muted-foreground hover:text-foreground active:scale-95 lg:hidden transition-all">
