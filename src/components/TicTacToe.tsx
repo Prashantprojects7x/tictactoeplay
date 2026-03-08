@@ -358,6 +358,22 @@ export default function TicTacToe() {
         mode = "online"; opponent = "Online Player";
         // Award coins only to logged-in winner in online mode
         if (myWin && user) shouldAwardCoins = true;
+
+        // Report tournament match result
+        if (tournamentMatchIdRef.current && user) {
+          const winnerId = myWin ? user.id : null;
+          if (winnerId) {
+            supabase
+              .from("tournament_matches")
+              .update({ winner_id: winnerId, status: "finished", finished_at: new Date().toISOString() })
+              .eq("id", tournamentMatchIdRef.current)
+              .then(() => {
+                toast("🏟️ Tournament match result recorded!");
+                tournamentMatchIdRef.current = null;
+                tournamentIdRef.current = null;
+              });
+          }
+        }
       } else if (vsAI) {
         outcome = winner === "X" ? "win" : "loss";
         if (winner === "X") recordWin(elapsed); else recordLoss();
