@@ -28,6 +28,7 @@ import { useBattlePass } from "@/hooks/useBattlePass";
 import ChallengeNotification from "./game/ChallengeNotification";
 import { calculateXpGain, processXpGain, getLevelTitle, xpForLevel } from "./game/progression";
 import GameChat, { type ChatMessage } from "./game/GameChat";
+import { EmoteBar, EmoteOverlay, useEmoteSystem } from "./game/EmoteReactions";
 
 // ─── Confetti ──────────────────────────────────────────────────
 function Confetti() {
