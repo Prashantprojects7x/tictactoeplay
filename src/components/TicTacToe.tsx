@@ -92,52 +92,64 @@ function FloatingParticles() {
   );
 }
 
+// ─── Theme-aware mark colors ────────────────────────────────────
+const THEME_MARK_COLORS: Record<BoardTheme, { x: [string, string]; o: [string, string]; xGlow: string; oGlow: string }> = {
+  default: { x: ["hsl(265,90%,72%)", "hsl(290,85%,70%)"], o: ["hsl(165,85%,55%)", "hsl(185,80%,50%)"], xGlow: "hsl(265,90%,62%)", oGlow: "hsl(165,80%,48%)" },
+  neon:    { x: ["hsl(330,100%,65%)", "hsl(350,100%,60%)"], o: ["hsl(120,100%,55%)", "hsl(150,100%,45%)"], xGlow: "hsl(330,100%,55%)", oGlow: "hsl(120,100%,50%)" },
+  ocean:   { x: ["hsl(200,100%,65%)", "hsl(220,100%,60%)"], o: ["hsl(40,100%,60%)", "hsl(50,100%,55%)"], xGlow: "hsl(200,100%,50%)", oGlow: "hsl(40,100%,55%)" },
+  sunset:  { x: ["hsl(25,100%,65%)", "hsl(10,100%,60%)"], o: ["hsl(280,80%,65%)", "hsl(300,80%,60%)"], xGlow: "hsl(25,100%,55%)", oGlow: "hsl(280,80%,55%)" },
+};
+
 // ─── SVG Marks with enhanced animations ─────────────────────────
-function XMark({ isWin, large }: { isWin: boolean; large?: boolean }) {
+function XMark({ isWin, large, theme = "default" }: { isWin: boolean; large?: boolean; theme?: BoardTheme }) {
+  const colors = THEME_MARK_COLORS[theme];
+  const gradId = `xGrad-${theme}`;
   return (
     <motion.svg viewBox="0 0 50 50" className={large ? "h-14 w-14 sm:h-18 sm:w-18 md:h-20 md:w-20" : "h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14"}
       initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 12 }}>
       <motion.line x1="12" y1="12" x2="38" y2="38"
-        stroke={isWin ? "hsl(48,100%,55%)" : "url(#xGrad)"}
+        stroke={isWin ? "hsl(48,100%,55%)" : `url(#${gradId})`}
         strokeWidth="4.5" strokeLinecap="round"
         initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
         transition={{ duration: 0.25 }}
-        filter={isWin ? "drop-shadow(0 0 6px hsl(48,100%,55%))" : "drop-shadow(0 0 4px hsl(265,90%,62%))"}
+        filter={isWin ? "drop-shadow(0 0 6px hsl(48,100%,55%))" : `drop-shadow(0 0 4px ${colors.xGlow})`}
       />
       <motion.line x1="38" y1="12" x2="12" y2="38"
-        stroke={isWin ? "hsl(48,100%,55%)" : "url(#xGrad)"}
+        stroke={isWin ? "hsl(48,100%,55%)" : `url(#${gradId})`}
         strokeWidth="4.5" strokeLinecap="round"
         initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
         transition={{ duration: 0.25, delay: 0.08 }}
-        filter={isWin ? "drop-shadow(0 0 6px hsl(48,100%,55%))" : "drop-shadow(0 0 4px hsl(265,90%,62%))"}
+        filter={isWin ? "drop-shadow(0 0 6px hsl(48,100%,55%))" : `drop-shadow(0 0 4px ${colors.xGlow})`}
       />
       <defs>
-        <linearGradient id="xGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="hsl(265,90%,72%)" />
-          <stop offset="100%" stopColor="hsl(290,85%,70%)" />
+        <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor={colors.x[0]} />
+          <stop offset="100%" stopColor={colors.x[1]} />
         </linearGradient>
       </defs>
     </motion.svg>
   );
 }
 
-function OMark({ isWin, large }: { isWin: boolean; large?: boolean }) {
+function OMark({ isWin, large, theme = "default" }: { isWin: boolean; large?: boolean; theme?: BoardTheme }) {
+  const colors = THEME_MARK_COLORS[theme];
+  const gradId = `oGrad-${theme}`;
   return (
     <motion.svg viewBox="0 0 50 50" className={large ? "h-14 w-14 sm:h-18 sm:w-18 md:h-20 md:w-20" : "h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14"}
       initial={{ scale: 0, rotate: 180 }} animate={{ scale: 1, rotate: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 12 }}>
       <motion.circle cx="25" cy="25" r="14" fill="none"
-        stroke={isWin ? "hsl(48,100%,55%)" : "url(#oGrad)"}
+        stroke={isWin ? "hsl(48,100%,55%)" : `url(#${gradId})`}
         strokeWidth="4.5" strokeLinecap="round"
         initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
         transition={{ duration: 0.35 }}
-        filter={isWin ? "drop-shadow(0 0 6px hsl(48,100%,55%))" : "drop-shadow(0 0 4px hsl(165,80%,48%))"}
+        filter={isWin ? "drop-shadow(0 0 6px hsl(48,100%,55%))" : `drop-shadow(0 0 4px ${colors.oGlow})`}
       />
       <defs>
-        <linearGradient id="oGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="hsl(165,85%,55%)" />
-          <stop offset="100%" stopColor="hsl(185,80%,50%)" />
+        <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor={colors.o[0]} />
+          <stop offset="100%" stopColor={colors.o[1]} />
         </linearGradient>
       </defs>
     </motion.svg>
@@ -926,7 +938,13 @@ export default function TicTacToe() {
         </div>
 
         {/* Board */}
-        <motion.div className={`glass-card-elevated rounded-3xl board-glow ${isFullscreen ? "p-6 sm:p-8" : "p-4 sm:p-5"} ${isOnline && !isMyTurn && !gameOver ? "opacity-80" : ""}`}
+        <motion.div
+          className={`glass-card-elevated rounded-3xl ${isFullscreen ? "p-6 sm:p-8" : "p-4 sm:p-5"} ${isOnline && !isMyTurn && !gameOver ? "opacity-80" : ""}`}
+          style={{
+            "--theme-accent": BOARD_THEMES[boardTheme].accent,
+            "--theme-cell-bg": BOARD_THEMES[boardTheme].cellBg,
+            boxShadow: `0 0 40px hsl(${BOARD_THEMES[boardTheme].accent} / 0.15), 0 0 80px hsl(${BOARD_THEMES[boardTheme].accent} / 0.05)`,
+          } as React.CSSProperties}
           initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, type: "spring", stiffness: 120 }}>
           <div className={`grid grid-cols-3 ${isFullscreen ? "gap-3 sm:gap-4" : "gap-2.5 sm:gap-3"}`}>
             {board.map((cell, i) => {
@@ -945,6 +963,25 @@ export default function TicTacToe() {
                   initial={{ opacity: 0, scale: 0.5, y: 20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ delay: row * 0.06 + col * 0.06, type: "spring", stiffness: 200 }}
+                  style={(() => {
+                    const themeColors = THEME_MARK_COLORS[boardTheme];
+                    const themeBg = BOARD_THEMES[boardTheme];
+                    if (isWinCell || isPeek || isShielded) return {};
+                    if (cell === "X") return {
+                      backgroundColor: `hsl(${themeBg.cellBg} / 0.5)`,
+                      boxShadow: `inset 0 0 20px ${themeColors.xGlow}15, 0 0 12px ${themeColors.xGlow}10`,
+                    };
+                    if (cell === "O") return {
+                      backgroundColor: `hsl(${themeBg.cellBg} / 0.5)`,
+                      boxShadow: `inset 0 0 20px ${themeColors.oGlow}15, 0 0 12px ${themeColors.oGlow}10`,
+                    };
+                    if (!cell) return {
+                      backgroundColor: `hsl(${themeBg.cellBg} / 0.6)`,
+                      borderColor: canClick ? `hsl(${themeBg.accent} / 0.2)` : undefined,
+                      boxShadow: canClick ? `inset 0 0 20px hsl(${themeBg.accent} / 0.05)` : undefined,
+                    };
+                    return {};
+                  })()}
                   className={`relative flex items-center justify-center rounded-2xl transition-all duration-300
                     ${isFullscreen
                       ? "h-[100px] w-[100px] sm:h-[130px] sm:w-[130px] md:h-[150px] md:w-[150px]"
@@ -957,19 +994,19 @@ export default function TicTacToe() {
                       : isShielded
                       ? "bg-primary/8 border-2 border-dashed border-primary/30"
                       : cell === "X"
-                      ? "bg-x-color/6 border-2 border-x-color/15 glow-x"
+                      ? "border-2 border-x-color/15 glow-x"
                       : cell === "O"
-                      ? "bg-o-color/6 border-2 border-o-color/15 glow-o"
+                      ? "border-2 border-o-color/15 glow-o"
                       : canClick
-                      ? "bg-secondary/40 border-2 border-border/40 hover:bg-cell-hover hover:border-primary/30 cursor-pointer"
-                      : "bg-secondary/40 border-2 border-border/40 cursor-default opacity-60"
+                      ? "border-2 cursor-pointer hover:scale-[1.03]"
+                      : "border-2 border-border/40 cursor-default opacity-60"
                     }
                   `}
                   disabled={!canClick}
                 >
                   <AnimatePresence>
-                    {cell === "X" && <XMark isWin={!!isWinCell} large={isFullscreen} />}
-                    {cell === "O" && <OMark isWin={!!isWinCell} large={isFullscreen} />}
+                    {cell === "X" && <XMark isWin={!!isWinCell} large={isFullscreen} theme={boardTheme} />}
+                    {cell === "O" && <OMark isWin={!!isWinCell} large={isFullscreen} theme={boardTheme} />}
                   </AnimatePresence>
                   {isShielded && (
                     <motion.span className="absolute top-1 right-1.5 text-xs" animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 2, repeat: Infinity }}>🛡️</motion.span>
