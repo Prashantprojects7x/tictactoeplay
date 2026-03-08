@@ -1086,10 +1086,20 @@ export default function TicTacToe() {
           </button>
         )}
 
+        {/* Emote bar (online only) */}
+        {isOnline && mp.state.connected && (
+          <div className="flex justify-center mt-2">
+            <EmoteBar onSendEmote={handleSendEmote} disabled={emoteCooldown} />
+          </div>
+        )}
+
         {/* In-game chat (online only) */}
         {isOnline && mp.state.connected && (
           <GameChat messages={chatMessages} onSend={handleSendChat} myRole={mp.state.myRole} />
         )}
+
+        {/* Floating emote overlay */}
+        <EmoteOverlay emotes={emoteSystem.floatingEmotes} />
       </div>
 
       {/* Desktop sidebar — hidden in fullscreen */}
