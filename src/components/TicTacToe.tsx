@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import type { Player, Difficulty, BoardTheme, MoveRecord } from "./game/types";
 import { BOARD_THEMES, POWERUP_COSTS, ACHIEVEMENT_DEFS } from "./game/types";
-import { checkWinner, getAIMove, findBestMoveForPlayer, playSound } from "./game/engine";
+import { checkWinner, getAIMove, findBestMoveForPlayer, playSound, type SoundType } from "./game/engine";
 import {
   getCoins, addCoinsToStorage, resetCoinsStorage,
   recordWin, recordLoss, recordDraw, addGameHistory,
