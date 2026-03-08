@@ -296,25 +296,47 @@ export default function TicTacToe() {
       addCoins(winner, 10);
       toast(`🎉 ${getPlayerName(winner)} wins! +10 coins`);
 
+      let outcome: "win" | "loss" = "win";
+      let mode = "pvp";
+      let opponent = "Player";
+
       if (isOnline) {
         const myWin = winner === mp.state.myRole;
+        outcome = myWin ? "win" : "loss";
         if (myWin) recordWin(elapsed); else recordLoss();
-        addGameHistory({ outcome: myWin ? "win" : "loss", time: elapsed, date: Date.now(), mode: "online", opponent: "Online Player" });
+        mode = "online"; opponent = "Online Player";
       } else if (vsAI) {
+        outcome = winner === "X" ? "win" : "loss";
         if (winner === "X") recordWin(elapsed); else recordLoss();
-        addGameHistory({ outcome: winner === "X" ? "win" : "loss", time: elapsed, date: Date.now(), mode: "ai", opponent: `AI (${difficulty})` });
+        mode = "ai"; opponent = `AI (${difficulty})`;
       } else {
         recordWin(elapsed);
-        addGameHistory({ outcome: "win", time: elapsed, date: Date.now(), mode: "pvp", opponent: "Player" });
       }
+      addGameHistory({ outcome, time: elapsed, date: Date.now(), mode, opponent });
+
+      // XP gain & database sync
+      const xpGained = calculateXpGain(outcome, elapsed, vsAI ? difficulty : undefined);
+      toast(`⚡ +${xpGained} XP`);
+      syncGameResult(outcome, elapsed, xpGained).then((updated) => {
+        if (updated && updated.level > (updated.level - 1)) {
+          // Check for level-up by comparing with previous
+        }
+      });
+
       checkAchievements(elapsed);
     } else if (isDraw) {
+      const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
       if (timerRef.current) clearInterval(timerRef.current);
       setScore((s) => ({ ...s, draws: s.draws + 1 }));
       setGameOver(true);
       if (soundEnabled) playSound("draw", 0.06);
       recordDraw();
-      addGameHistory({ outcome: "draw", time: Math.floor((Date.now() - startTimeRef.current) / 1000), date: Date.now(), mode: isOnline ? "online" : vsAI ? "ai" : "pvp", opponent: isOnline ? "Online Player" : vsAI ? `AI (${difficulty})` : "Player" });
+      addGameHistory({ outcome: "draw", time: elapsed, date: Date.now(), mode: isOnline ? "online" : vsAI ? "ai" : "pvp", opponent: isOnline ? "Online Player" : vsAI ? `AI (${difficulty})` : "Player" });
+
+      const xpGained = calculateXpGain("draw", elapsed);
+      toast(`⚡ +${xpGained} XP`);
+      syncGameResult("draw", elapsed, xpGained);
+
       refreshSidebar();
     }
   }, [board, winner, isDraw, gameOver, soundEnabled, addCoins, vsAI, isOnline, difficulty, checkAchievements, mp.state.myRole]);
