@@ -615,6 +615,18 @@ export default function TicTacToe() {
 
       <AnimatePresence>{showConfetti && <Confetti />}</AnimatePresence>
 
+      {/* Challenge notification */}
+      <AnimatePresence>
+        {challenges.pendingChallenge && (
+          <ChallengeNotification
+            challengerName={challenges.pendingChallenge.challengerName}
+            challengerAvatar={challenges.pendingChallenge.challengerAvatar}
+            onAccept={() => challenges.acceptChallenge(challenges.pendingChallenge.id, challenges.pendingChallenge.room_code)}
+            onDecline={() => challenges.declineChallenge(challenges.pendingChallenge.id)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Main game area */}
       <div className="flex-1 flex flex-col items-center justify-center gap-5 p-4 sm:p-6 z-10 relative">
 
