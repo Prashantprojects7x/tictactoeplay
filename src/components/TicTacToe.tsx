@@ -106,7 +106,7 @@ function XMark({ isWin, large, theme = "default" }: { isWin: boolean; large?: bo
   const colors = THEME_MARK_COLORS[theme];
   const gradId = `xGrad-${theme}`;
   return (
-    <motion.svg viewBox="0 0 50 50" className={large ? "h-14 w-14 sm:h-18 sm:w-18 md:h-20 md:w-20" : "h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14"}
+    <motion.svg viewBox="0 0 50 50" className={large ? "h-16 w-16 sm:h-18 sm:w-18 md:h-20 md:w-20" : "h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14"}
       initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 12 }}>
       <motion.line x1="12" y1="12" x2="38" y2="38"
@@ -137,7 +137,7 @@ function OMark({ isWin, large, theme = "default" }: { isWin: boolean; large?: bo
   const colors = THEME_MARK_COLORS[theme];
   const gradId = `oGrad-${theme}`;
   return (
-    <motion.svg viewBox="0 0 50 50" className={large ? "h-14 w-14 sm:h-18 sm:w-18 md:h-20 md:w-20" : "h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14"}
+    <motion.svg viewBox="0 0 50 50" className={large ? "h-16 w-16 sm:h-18 sm:w-18 md:h-20 md:w-20" : "h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14"}
       initial={{ scale: 0, rotate: 180 }} animate={{ scale: 1, rotate: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 12 }}>
       <motion.circle cx="25" cy="25" r="14" fill="none"
@@ -1001,7 +1001,7 @@ export default function TicTacToe() {
                   })()}
                   className={`relative flex items-center justify-center rounded-2xl transition-all duration-300
                     ${isFullscreen
-                      ? "h-[80px] w-[80px] sm:h-[110px] sm:w-[110px] md:h-[150px] md:w-[150px]"
+                      ? "h-[100px] w-[100px] sm:h-[120px] sm:w-[120px] md:h-[150px] md:w-[150px]"
                       : "h-[64px] w-[64px] sm:h-[80px] sm:w-[80px] md:h-[96px] md:w-[96px]"
                     }
                     ${isWinCell
