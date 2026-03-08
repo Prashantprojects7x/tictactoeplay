@@ -57,6 +57,10 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        "win-highlight": "hsl(var(--win-highlight))",
+        "cell-hover": "hsl(var(--cell-hover))",
+        "x-color": "hsl(var(--x-color))",
+        "o-color": "hsl(var(--o-color))",
       },
       borderRadius: {
         lg: "var(--radius)",
