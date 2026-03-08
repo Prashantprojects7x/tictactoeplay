@@ -1001,7 +1001,7 @@ export default function TicTacToe() {
                   })()}
                   className={`relative flex items-center justify-center rounded-2xl transition-all duration-300
                     ${isFullscreen
-                      ? "h-[80px] w-[80px] sm:h-[110px] sm:w-[110px] md:h-[150px] md:w-[150px]"
+                      ? "h-[100px] w-[100px] sm:h-[120px] sm:w-[120px] md:h-[150px] md:w-[150px]"
                       : "h-[64px] w-[64px] sm:h-[80px] sm:w-[80px] md:h-[96px] md:w-[96px]"
                     }
                     ${isWinCell
