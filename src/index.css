@@ -214,3 +214,11 @@
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-8px); }
 }
+
+/* Fullscreen game mode */
+.fullscreen-game {
+  position: fixed !important;
+  inset: 0;
+  z-index: 50;
+  overflow-y: auto;
+}
