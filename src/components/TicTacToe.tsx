@@ -792,11 +792,17 @@ export default function TicTacToe() {
           className="glass-nav flex items-center gap-1 rounded-2xl px-2 py-1.5"
           initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.15 }}
         >
-          {/* Utility buttons */}
-          <button onClick={() => setSoundEnabled(!soundEnabled)}
-            className="nav-item-glow relative rounded-xl p-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all" title="Sound">
-            {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-          </button>
+          {/* Settings */}
+          <SettingsMenu
+            soundEnabled={soundEnabled}
+            setSoundEnabled={setSoundEnabled}
+            sfxVolume={sfxVolume}
+            setSfxVolume={setSfxVolume}
+            musicEnabled={music.musicEnabled}
+            setMusicEnabled={music.setMusicEnabled}
+            musicVolume={music.musicVolume}
+            setMusicVolume={music.setMusicVolume}
+          />
           <button onClick={() => setIsFullscreen(!isFullscreen)}
             className="nav-item-glow relative rounded-xl p-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
             {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
