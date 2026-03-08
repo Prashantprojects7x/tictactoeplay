@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Trophy, Users, Coins, Swords, Crown, Plus,
-  ChevronRight, Zap, Shield, Clock, Sparkles,
+  ChevronRight, Zap, Shield, Clock, Sparkles, Gem,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTournament } from "@/hooks/useTournament";
+import { supabase } from "@/integrations/supabase/client";
 import type { TournamentMatch } from "@/hooks/useTournament";
 
 // ─── Bracket Match Card ──────────────────────────────────────
