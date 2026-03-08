@@ -183,7 +183,7 @@ type GameMode = "local" | "ai" | "online";
 // ─── Main Component ─────────────────────────────────────────────
 export default function TicTacToe() {
   const { user, signOut } = useAuth();
-  const { syncGameResult } = useProfileSync();
+  const { syncGameResult, addCoinsToProfile } = useProfileSync();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const challenges = useChallenges();
@@ -319,24 +319,35 @@ export default function TicTacToe() {
       setShowConfetti(true);
       if (soundEnabled) playSound("win", 0.1);
       setTimeout(() => setShowConfetti(false), 3500);
-      addCoins(winner, 10);
-      toast(`🎉 ${getPlayerName(winner)} wins! +10 coins`);
-
       let outcome: "win" | "loss" = "win";
       let mode = "pvp";
       let opponent = "Player";
+      let shouldAwardCoins = false;
 
       if (isOnline) {
         const myWin = winner === mp.state.myRole;
         outcome = myWin ? "win" : "loss";
         if (myWin) recordWin(elapsed); else recordLoss();
         mode = "online"; opponent = "Online Player";
+        // Award coins only to logged-in winner in online mode
+        if (myWin && user) shouldAwardCoins = true;
       } else if (vsAI) {
         outcome = winner === "X" ? "win" : "loss";
         if (winner === "X") recordWin(elapsed); else recordLoss();
         mode = "ai"; opponent = `AI (${difficulty})`;
+        // No coins in AI mode
       } else {
+        // Local mode: award coins to logged-in user
         recordWin(elapsed);
+        if (user) shouldAwardCoins = true;
+      }
+
+      if (shouldAwardCoins) {
+        addCoinsToProfile(10);
+        addCoins(winner, 10);
+        toast(`🎉 ${getPlayerName(winner)} wins! +10 coins credited to your account`);
+      } else {
+        toast(`🎉 ${getPlayerName(winner)} wins!`);
       }
       addGameHistory({ outcome, time: elapsed, date: Date.now(), mode, opponent });
 
