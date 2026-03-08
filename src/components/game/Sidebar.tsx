@@ -228,21 +228,21 @@ function SidebarSection({ title, emoji, icon, open, onToggle, children, badge }:
   title: string; emoji: string; icon: React.ReactNode; open: boolean; onToggle: () => void; children: React.ReactNode; badge?: React.ReactNode;
 }) {
   return (
-    <div className="glass-card rounded-xl overflow-hidden">
-      <button onClick={onToggle} className="w-full flex items-center justify-between px-3 py-2.5 text-xs font-bold text-foreground/90 hover:bg-secondary/20 transition-colors">
-        <span className="flex items-center gap-2">
-          <span className="text-sm">{emoji}</span>
-          {title}
+    <div className="glass-card rounded-xl overflow-hidden group/section">
+      <button onClick={onToggle} className="w-full flex items-center justify-between px-3.5 py-3 text-xs font-bold text-foreground/90 hover:bg-secondary/20 transition-all duration-200">
+        <span className="flex items-center gap-2.5">
+          <span className="text-base drop-shadow-sm">{emoji}</span>
+          <span style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{title}</span>
           {badge && <span className="ml-1">{badge}</span>}
         </span>
-        <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+        <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.25 }}>
+          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground/50" />
         </motion.div>
       </button>
       <AnimatePresence>
         {open && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-            <div className="px-3 pb-3 pt-0.5">{children}</div>
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25, ease: "easeInOut" }} className="overflow-hidden">
+            <div className="px-3.5 pb-3.5 pt-1">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
