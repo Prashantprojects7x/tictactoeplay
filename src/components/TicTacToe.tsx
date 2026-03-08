@@ -19,6 +19,8 @@ import Sidebar from "./game/Sidebar";
 import { useMultiplayer } from "./game/useMultiplayer";
 import MultiplayerLobby from "./game/MultiplayerLobby";
 import { useAuth } from "@/contexts/AuthContext";
+import { useProfileSync } from "@/hooks/useProfileSync";
+import { calculateXpGain, processXpGain, getLevelTitle, xpForLevel } from "./game/progression";
 
 // ─── Confetti ──────────────────────────────────────────────────
 function Confetti() {
