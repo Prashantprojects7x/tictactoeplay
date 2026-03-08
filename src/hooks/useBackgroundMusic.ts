@@ -2,8 +2,18 @@ import { useRef, useEffect, useCallback, useState } from "react";
 
 const MUSIC_SRC = "/audio/background-music.mp3";
 
+// Singleton audio element to survive re-renders and React strict mode
+let _bgAudio: HTMLAudioElement | null = null;
+function getBgAudio(): HTMLAudioElement {
+  if (!_bgAudio) {
+    _bgAudio = new Audio(MUSIC_SRC);
+    _bgAudio.loop = true;
+    _bgAudio.preload = "auto";
+  }
+  return _bgAudio;
+}
+
 export function useBackgroundMusic() {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [musicVolume, setMusicVolume] = useState(() => {
     const saved = localStorage.getItem("music-volume");
     return saved !== null ? parseFloat(saved) : 0.3;
@@ -15,69 +25,64 @@ export function useBackgroundMusic() {
   const [isPlaying, setIsPlaying] = useState(false);
   const hasInteracted = useRef(false);
 
-  // Initialize audio element once
+  const audio = getBgAudio();
+
+  // Sync volume immediately on every change
   useEffect(() => {
-    const audio = new Audio(MUSIC_SRC);
-    audio.loop = true;
-    audio.volume = musicVolume;
-    audio.preload = "auto";
-    audioRef.current = audio;
-
-    audio.addEventListener("play", () => setIsPlaying(true));
-    audio.addEventListener("pause", () => setIsPlaying(false));
-
-    return () => {
-      audio.pause();
-      audio.src = "";
-    };
-  }, []);
-
-  // Sync volume
-  useEffect(() => {
-    if (audioRef.current) audioRef.current.volume = musicVolume;
+    audio.volume = Math.max(0, Math.min(1, musicVolume));
     localStorage.setItem("music-volume", String(musicVolume));
-  }, [musicVolume]);
+  }, [musicVolume, audio]);
 
-  // Sync enabled state
+  // Sync play/pause on enabled change
   useEffect(() => {
     localStorage.setItem("music-enabled", String(musicEnabled));
-    if (!audioRef.current) return;
     if (musicEnabled && hasInteracted.current) {
-      audioRef.current.play().catch(() => {});
-    } else {
-      audioRef.current.pause();
+      audio.play().catch(() => {});
+      setIsPlaying(true);
+    } else if (!musicEnabled) {
+      audio.pause();
+      setIsPlaying(false);
     }
-  }, [musicEnabled]);
+  }, [musicEnabled, audio]);
 
   // Start on first user interaction (browsers block autoplay)
   const startOnInteraction = useCallback(() => {
     if (hasInteracted.current) return;
     hasInteracted.current = true;
-    if (musicEnabled && audioRef.current) {
-      audioRef.current.play().catch(() => {});
+    if (musicEnabled) {
+      audio.volume = musicVolume;
+      audio.play().then(() => setIsPlaying(true)).catch(() => {});
     }
-  }, [musicEnabled]);
+  }, [musicEnabled, musicVolume, audio]);
 
   useEffect(() => {
     const handler = () => startOnInteraction();
-    document.addEventListener("click", handler, { once: false });
-    document.addEventListener("keydown", handler, { once: false });
+    document.addEventListener("click", handler);
+    document.addEventListener("keydown", handler);
     return () => {
       document.removeEventListener("click", handler);
       document.removeEventListener("keydown", handler);
     };
   }, [startOnInteraction]);
 
-  const toggleMusic = useCallback(() => {
-    setMusicEnabled((prev) => !prev);
-  }, []);
+  // Track play state
+  useEffect(() => {
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+    audio.addEventListener("play", onPlay);
+    audio.addEventListener("pause", onPause);
+    return () => {
+      audio.removeEventListener("play", onPlay);
+      audio.removeEventListener("pause", onPause);
+    };
+  }, [audio]);
 
   return {
     musicVolume,
     setMusicVolume,
     musicEnabled,
     setMusicEnabled,
-    toggleMusic,
+    toggleMusic: useCallback(() => setMusicEnabled((prev) => !prev), []),
     isPlaying,
   };
 }
