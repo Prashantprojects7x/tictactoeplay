@@ -178,6 +178,8 @@ type GameMode = "local" | "ai" | "online";
 
 // ─── Main Component ─────────────────────────────────────────────
 export default function TicTacToe() {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [board, setBoard] = useState<Player[]>(Array(9).fill(null));
   const [isXTurn, setIsXTurn] = useState(true);
   const [winLine, setWinLine] = useState<number[] | null>(null);
