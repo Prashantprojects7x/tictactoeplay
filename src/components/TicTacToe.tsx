@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import type { Player, Difficulty, BoardTheme, MoveRecord } from "./game/types";
 import { BOARD_THEMES, POWERUP_COSTS, ACHIEVEMENT_DEFS } from "./game/types";
-import { checkWinner, getAIMove, findBestMoveForPlayer, playSound } from "./game/engine";
+import { checkWinner, getAIMove, findBestMoveForPlayer, playSound, type SoundType } from "./game/engine";
 import {
   getCoins, addCoinsToStorage, resetCoinsStorage,
   recordWin, recordLoss, recordDraw, addGameHistory,
@@ -354,7 +354,6 @@ export default function TicTacToe() {
       setWinLine(checkWinner(board).line);
       setGameOver(true);
       setShowConfetti(true);
-      if (soundEnabled) playSound("win", 0.1);
       setTimeout(() => setShowConfetti(false), 3500);
       let outcome: "win" | "loss" = "win";
       let mode = "pvp";
@@ -392,6 +391,12 @@ export default function TicTacToe() {
       } else {
         // Local mode: no coins awarded
         recordWin(elapsed);
+      }
+
+      // Play appropriate sound based on outcome
+      if (soundEnabled) {
+        if (outcome === "loss") playSound("loss", 0.1);
+        else playSound("win", 0.1);
       }
 
       if (shouldAwardCoins) {
@@ -542,9 +547,10 @@ export default function TicTacToe() {
     if (isOnline) return;
     const cost = POWERUP_COSTS.peek;
     const coins = currentPlayer === "X" ? coinsX : coinsO;
-    if (coins < cost) { toast(`Not enough coins (${cost})`); return; }
+    if (coins < cost) { if (soundEnabled) playSound("error", 0.08); toast(`Not enough coins (${cost})`); return; }
     if (gameOver) return;
     addCoins(currentPlayer, -cost);
+    if (soundEnabled) playSound("powerup", 0.1);
     const best = findBestMoveForPlayer(board, currentPlayer);
     if (best !== null) { setPeekCell(best); setTimeout(() => setPeekCell(null), 2200); toast("🔍 Best move highlighted!"); }
   };
@@ -587,6 +593,7 @@ export default function TicTacToe() {
   }, []);
 
   const reset = () => {
+    if (soundEnabled) playSound("click", 0.08);
     resetBoard();
     if (isOnline) mp.sendReset();
   };
@@ -594,6 +601,7 @@ export default function TicTacToe() {
   const resetAll = () => { resetBoard(); setScore({ X: 0, O: 0, draws: 0 }); setRound(1); };
 
   const switchMode = (mode: GameMode) => {
+    if (soundEnabled) playSound("click", 0.08);
     if (isOnline) mp.leaveRoom();
     setGameMode(mode);
     setShowLobby(mode === "online");
