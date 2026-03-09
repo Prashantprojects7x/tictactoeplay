@@ -30,37 +30,8 @@ import { calculateXpGain, processXpGain, getLevelTitle, xpForLevel } from "./gam
 import GameChat, { type ChatMessage } from "./game/GameChat";
 import { EmoteBar, EmoteOverlay, useEmoteSystem } from "./game/EmoteReactions";
 
-// ─── Confetti ──────────────────────────────────────────────────
-function Confetti() {
-  const particles = Array.from({ length: 60 }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    delay: Math.random() * 0.6,
-    duration: 1.5 + Math.random() * 2.5,
-    color: [
-      "hsl(265,90%,65%)", "hsl(165,80%,50%)", "hsl(48,100%,55%)",
-      "hsl(330,85%,60%)", "hsl(200,85%,60%)", "hsl(45,100%,70%)",
-    ][i % 6],
-    size: 3 + Math.random() * 8,
-    isCircle: Math.random() > 0.5,
-  }));
-  return (
-    <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
-      {particles.map((p) => (
-        <motion.div
-          key={p.id}
-          initial={{ y: -20, x: `${p.x}vw`, opacity: 1, rotate: 0, scale: 1 }}
-          animate={{ y: "110vh", opacity: 0, rotate: 720 * (Math.random() > 0.5 ? 1 : -1), scale: 0.3 }}
-          transition={{ duration: p.duration, delay: p.delay, ease: "easeIn" }}
-          style={{
-            position: "absolute", width: p.size, height: p.size * (p.isCircle ? 1 : 1.5),
-            borderRadius: p.isCircle ? "50%" : "2px", backgroundColor: p.color,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
+// Win celebration is now in a separate component
+import WinCelebration from "./game/WinCelebration";
 
 // ─── Floating particles background ──────────────────────────────
 function FloatingParticles() {
@@ -223,6 +194,7 @@ export default function TicTacToe() {
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
   const [gameOver, setGameOver] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [currentWinStreak, setCurrentWinStreak] = useState(0);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [sfxVolume, setSfxVolume] = useState(() => {
     const saved = localStorage.getItem("sfx-volume");
@@ -395,7 +367,6 @@ export default function TicTacToe() {
       setWinLine(checkWinner(board).line);
       setGameOver(true);
       setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 3500);
       let outcome: "win" | "loss" = "win";
       let mode = "pvp";
       let opponent = "Player";
@@ -434,6 +405,15 @@ export default function TicTacToe() {
         recordWin(elapsed);
       }
 
+      // Track win streak and celebration duration
+      if (outcome === "win") {
+        setCurrentWinStreak((s) => s + 1);
+      } else {
+        setCurrentWinStreak(0);
+      }
+      const celebrationTimeout = currentWinStreak >= 5 ? 5000 : currentWinStreak >= 3 ? 4000 : 3500;
+      setTimeout(() => setShowConfetti(false), celebrationTimeout);
+
       // Play appropriate sound based on outcome
       if (soundEnabled) {
         if (outcome === "loss") playSound("loss", sfxVol);
@@ -467,6 +447,7 @@ export default function TicTacToe() {
       if (timerRef.current) clearInterval(timerRef.current);
       setScore((s) => ({ ...s, draws: s.draws + 1 }));
       setGameOver(true);
+      setCurrentWinStreak(0);
       if (soundEnabled) playSound("draw", sfxVol);
       recordDraw();
       addGameHistory({ outcome: "draw", time: elapsed, date: Date.now(), mode: isOnline ? "online" : vsAI ? "ai" : "pvp", opponent: isOnline ? "Online Player" : vsAI ? `AI (${difficulty})` : "Player" });
@@ -731,7 +712,7 @@ export default function TicTacToe() {
       <motion.div className="pointer-events-none absolute top-[55%] left-[45%] h-64 w-64 rounded-full bg-[hsl(var(--gold))]/3 blur-[120px] z-0"
         animate={{ opacity: [0.2, 0.5, 0.2] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 4 }} />
 
-      <AnimatePresence>{showConfetti && <Confetti />}</AnimatePresence>
+      <AnimatePresence>{showConfetti && <WinCelebration winStreak={currentWinStreak} />}</AnimatePresence>
 
       {/* Challenge notification */}
       <AnimatePresence>
