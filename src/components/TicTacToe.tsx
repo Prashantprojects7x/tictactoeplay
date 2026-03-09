@@ -194,6 +194,7 @@ export default function TicTacToe() {
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
   const [gameOver, setGameOver] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [currentWinStreak, setCurrentWinStreak] = useState(0);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [sfxVolume, setSfxVolume] = useState(() => {
     const saved = localStorage.getItem("sfx-volume");
