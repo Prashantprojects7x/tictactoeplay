@@ -185,6 +185,98 @@ export type Database = {
         }
         Relationships: []
       }
+      seasonal_challenge_progress: {
+        Row: {
+          challenge_id: string
+          challenge_type: string
+          completed: boolean
+          created_at: string
+          event_id: string
+          id: string
+          last_updated: string
+          progress: number
+          reward_claimed: boolean
+          target: number
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          challenge_type: string
+          completed?: boolean
+          created_at?: string
+          event_id: string
+          id?: string
+          last_updated?: string
+          progress?: number
+          reward_claimed?: boolean
+          target: number
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          challenge_type?: string
+          completed?: boolean
+          created_at?: string
+          event_id?: string
+          id?: string
+          last_updated?: string
+          progress?: number
+          reward_claimed?: boolean
+          target?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seasonal_challenge_progress_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "seasonal_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seasonal_events: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string
+          id: string
+          is_active: boolean
+          name: string
+          rewards: Json
+          season_type: string
+          slug: string
+          start_date: string
+          theme_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date: string
+          id?: string
+          is_active?: boolean
+          name: string
+          rewards?: Json
+          season_type?: string
+          slug: string
+          start_date: string
+          theme_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          rewards?: Json
+          season_type?: string
+          slug?: string
+          start_date?: string
+          theme_id?: string | null
+        }
+        Relationships: []
+      }
       tournament_matches: {
         Row: {
           created_at: string

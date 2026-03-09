@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   RotateCcw, Monitor, Users, Trophy, Zap, Brain, Sparkles,
   Volume2, VolumeX, Undo2, Redo2, Eye, Shield, Timer, Menu, X,
-  Crown, Flame, Target, Swords, Globe, LogIn, LogOut, User, Maximize, Minimize, ShoppingBag, UserPlus, Medal,
+  Crown, Flame, Target, Swords, Globe, LogIn, LogOut, User, Maximize, Minimize, ShoppingBag, UserPlus, Medal, Calendar,
 } from "lucide-react";
 import SettingsMenu from "./game/SettingsMenu";
 import { useBackgroundMusic } from "@/hooks/useBackgroundMusic";
@@ -29,6 +29,7 @@ import ChallengeNotification from "./game/ChallengeNotification";
 import { calculateXpGain, processXpGain, getLevelTitle, xpForLevel } from "./game/progression";
 import GameChat, { type ChatMessage } from "./game/GameChat";
 import { EmoteBar, EmoteOverlay, useEmoteSystem } from "./game/EmoteReactions";
+import { useSeasonalEvents } from "@/hooks/useSeasonalEvents";
 
 // Win celebration is now in a separate component
 import WinCelebration from "./game/WinCelebration";
@@ -183,6 +184,7 @@ export default function TicTacToe() {
   const { user, signOut } = useAuth();
   const { syncGameResult } = useProfileSync();
   const { addBattlePassXp } = useBattlePass();
+  const { recordSeasonalWin } = useSeasonalEvents();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const challenges = useChallenges();
@@ -442,6 +444,11 @@ export default function TicTacToe() {
       }
 
       checkAchievements(elapsed);
+
+      // Track seasonal challenge progress
+      if (outcome === "win") {
+        recordSeasonalWin(currentWinStreak + 1);
+      }
     } else if (isDraw) {
       const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
       if (timerRef.current) clearInterval(timerRef.current);
@@ -843,6 +850,7 @@ export default function TicTacToe() {
             { path: "/battlepass", icon: Sparkles, color: "text-[hsl(var(--gold))]", label: "Pass" },
             { path: "/tournament", icon: Crown, color: "text-[hsl(var(--streak))]", label: "Cup" },
             { path: "/achievements", icon: Medal, color: "text-[hsl(var(--neon-pink))]", label: "Badges" },
+            { path: "/seasons", icon: Calendar, color: "text-accent", label: "Seasons" },
           ]).map(({ path, icon: Icon, color, label }) => (
             <button key={path} onClick={() => navigate(path)}
               className="nav-item-glow relative flex items-center gap-1 rounded-xl px-1.5 sm:px-2 py-1.5 sm:py-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all flex-shrink-0" title={label}>
