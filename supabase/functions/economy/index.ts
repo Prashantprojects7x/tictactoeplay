@@ -555,6 +555,20 @@ Deno.serve(async (req) => {
         });
       }
 
+      case "seasonal_reward": {
+        const { coins: rewardCoins } = params;
+        if (typeof rewardCoins !== "number" || rewardCoins <= 0 || rewardCoins > 1000)
+          return errorResponse("Invalid reward amount");
+
+        const profile = await getProfile(admin, userId);
+        await admin
+          .from("profiles")
+          .update({ coins: profile.coins + rewardCoins })
+          .eq("user_id", userId);
+
+        return jsonResponse({ success: true, coins: profile.coins + rewardCoins });
+      }
+
       default:
         return errorResponse("Unknown action");
     }
