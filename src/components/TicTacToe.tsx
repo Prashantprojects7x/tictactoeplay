@@ -703,7 +703,7 @@ export default function TicTacToe() {
       <motion.div className="pointer-events-none absolute top-[55%] left-[45%] h-64 w-64 rounded-full bg-[hsl(var(--gold))]/3 blur-[120px] z-0"
         animate={{ opacity: [0.2, 0.5, 0.2] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 4 }} />
 
-      <AnimatePresence>{showConfetti && <Confetti />}</AnimatePresence>
+      <AnimatePresence>{showConfetti && <WinCelebration winStreak={currentWinStreak} />}</AnimatePresence>
 
       {/* Challenge notification */}
       <AnimatePresence>
