@@ -46,6 +46,7 @@ export default function AnimatedRoutes() {
           <Route path="/battlepass" element={<ProtectedRoute><PageTransition><BattlePass /></PageTransition></ProtectedRoute>} />
           <Route path="/tournament" element={<ProtectedRoute><PageTransition><Tournament /></PageTransition></ProtectedRoute>} />
           <Route path="/achievements" element={<ProtectedRoute><PageTransition><Achievements /></PageTransition></ProtectedRoute>} />
+          <Route path="/seasons" element={<ProtectedRoute><PageTransition><Seasons /></PageTransition></ProtectedRoute>} />
           <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
           <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
