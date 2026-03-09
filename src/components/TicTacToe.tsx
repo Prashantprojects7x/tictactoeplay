@@ -405,6 +405,15 @@ export default function TicTacToe() {
         recordWin(elapsed);
       }
 
+      // Track win streak and celebration duration
+      if (outcome === "win") {
+        setCurrentWinStreak((s) => s + 1);
+      } else {
+        setCurrentWinStreak(0);
+      }
+      const celebrationTimeout = currentWinStreak >= 5 ? 5000 : currentWinStreak >= 3 ? 4000 : 3500;
+      setTimeout(() => setShowConfetti(false), celebrationTimeout);
+
       // Play appropriate sound based on outcome
       if (soundEnabled) {
         if (outcome === "loss") playSound("loss", sfxVol);
