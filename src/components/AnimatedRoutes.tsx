@@ -17,6 +17,7 @@ const Friends = lazy(() => import("@/pages/Friends"));
 const BattlePass = lazy(() => import("@/pages/BattlePass"));
 const Tournament = lazy(() => import("@/pages/Tournament"));
 const Achievements = lazy(() => import("@/pages/Achievements"));
+const Seasons = lazy(() => import("@/pages/Seasons"));
 const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
