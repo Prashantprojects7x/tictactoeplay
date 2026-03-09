@@ -184,6 +184,7 @@ export default function TicTacToe() {
   const { user, signOut } = useAuth();
   const { syncGameResult } = useProfileSync();
   const { addBattlePassXp } = useBattlePass();
+  const { recordSeasonalWin } = useSeasonalEvents();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const challenges = useChallenges();
