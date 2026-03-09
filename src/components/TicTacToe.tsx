@@ -366,8 +366,10 @@ export default function TicTacToe() {
       setScore((s) => ({ ...s, [winner]: s[winner as "X" | "O"] + 1 }));
       setWinLine(checkWinner(board).line);
       setGameOver(true);
+      setCurrentWinStreak((s) => s + 1);
       setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 3500);
+      const streakTimeout = currentWinStreak >= 5 ? 5000 : currentWinStreak >= 3 ? 4000 : 3500;
+      setTimeout(() => setShowConfetti(false), streakTimeout);
       let outcome: "win" | "loss" = "win";
       let mode = "pvp";
       let opponent = "Player";
