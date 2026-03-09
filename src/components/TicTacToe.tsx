@@ -441,6 +441,7 @@ export default function TicTacToe() {
       if (timerRef.current) clearInterval(timerRef.current);
       setScore((s) => ({ ...s, draws: s.draws + 1 }));
       setGameOver(true);
+      setCurrentWinStreak(0);
       if (soundEnabled) playSound("draw", sfxVol);
       recordDraw();
       addGameHistory({ outcome: "draw", time: elapsed, date: Date.now(), mode: isOnline ? "online" : vsAI ? "ai" : "pvp", opponent: isOnline ? "Online Player" : vsAI ? `AI (${difficulty})` : "Player" });
