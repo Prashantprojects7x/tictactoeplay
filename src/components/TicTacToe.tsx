@@ -444,6 +444,11 @@ export default function TicTacToe() {
       }
 
       checkAchievements(elapsed);
+
+      // Track seasonal challenge progress
+      if (outcome === "win") {
+        recordSeasonalWin(currentWinStreak + 1);
+      }
     } else if (isDraw) {
       const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
       if (timerRef.current) clearInterval(timerRef.current);
