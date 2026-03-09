@@ -29,6 +29,7 @@ import ChallengeNotification from "./game/ChallengeNotification";
 import { calculateXpGain, processXpGain, getLevelTitle, xpForLevel } from "./game/progression";
 import GameChat, { type ChatMessage } from "./game/GameChat";
 import { EmoteBar, EmoteOverlay, useEmoteSystem } from "./game/EmoteReactions";
+import { useSeasonalEvents } from "@/hooks/useSeasonalEvents";
 
 // Win celebration is now in a separate component
 import WinCelebration from "./game/WinCelebration";
