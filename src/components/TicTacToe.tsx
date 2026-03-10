@@ -809,11 +809,17 @@ export default function TicTacToe() {
 
           {/* Profile / Auth */}
           {user ? (
-            <button onClick={() => navigate("/profile")}
-              className="nav-item-glow relative flex items-center gap-1 rounded-xl px-1.5 sm:px-2.5 py-1.5 sm:py-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all flex-shrink-0" title="Profile">
-              <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent" />
-              <span className="hidden sm:inline text-[10px] font-semibold max-w-[70px] truncate">{user.email?.split("@")[0]}</span>
-            </button>
+            <>
+              <button onClick={() => navigate("/profile")}
+                className="nav-item-glow relative flex items-center gap-1 rounded-xl px-1.5 sm:px-2.5 py-1.5 sm:py-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all flex-shrink-0" title="Profile">
+                <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent" />
+                <span className="hidden sm:inline text-[10px] font-semibold max-w-[70px] truncate">{user.email?.split("@")[0]}</span>
+              </button>
+              <button onClick={() => { signOut(); toast("Signed out"); }}
+                className="nav-item-glow relative flex items-center gap-1 rounded-xl px-1.5 sm:px-2.5 py-1.5 sm:py-2 text-muted-foreground hover:text-destructive active:scale-90 transition-all flex-shrink-0" title="Sign Out">
+                <LogOut className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              </button>
+            </>
           ) : (
             <button onClick={() => navigate("/auth")}
               className="nav-item-glow relative flex items-center gap-1 rounded-xl px-1.5 sm:px-2.5 py-1.5 sm:py-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all flex-shrink-0" title="Sign In">
