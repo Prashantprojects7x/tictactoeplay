@@ -5,12 +5,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Trophy, Flame, Clock, Gamepad2, Crown, Coins,
-  Target, TrendingUp, Zap, Shield, Award,
+  Target, TrendingUp, Zap, Shield, Award, LogOut,
 } from "lucide-react";
 import { getLevelTitle, getLevelColor, xpForLevel } from "@/components/game/progression";
+import { toast } from "sonner";
 
 export default function Profile() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Record<string, any> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -134,7 +135,7 @@ export default function Profile() {
         </motion.div>
 
         {/* Quick Actions */}
-        <div className="flex gap-3 justify-center">
+        <div className="flex gap-3 justify-center flex-wrap">
           <Link
             to="/leaderboard"
             className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-3 rounded-xl font-bold text-sm hover:brightness-110 transition-all active:scale-95"
@@ -147,6 +148,12 @@ export default function Profile() {
           >
             <Zap className="w-4 h-4" /> Play Now
           </Link>
+          <button
+            onClick={async () => { await signOut(); toast("Signed out"); navigate("/"); }}
+            className="flex items-center gap-2 bg-destructive/10 text-destructive px-5 py-3 rounded-xl font-bold text-sm hover:bg-destructive/20 transition-all active:scale-95"
+          >
+            <LogOut className="w-4 h-4" /> Sign Out
+          </button>
         </div>
       </div>
     </div>
