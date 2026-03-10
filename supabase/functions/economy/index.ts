@@ -454,29 +454,47 @@ Deno.serve(async (req) => {
         if (!tournament_id || typeof amount !== "number" || amount <= 0 || amount > 10000)
           return errorResponse("Invalid parameters");
 
-        // Verify the tournament exists and the user is the creator or a participant
+        // Verify the tournament exists
         const { data: tournament } = await admin
           .from("tournaments")
-          .select("id, created_by, entry_fee")
+          .select("id, created_by, entry_fee, status")
           .eq("id", tournament_id)
           .single();
         if (!tournament) return errorResponse("Tournament not found");
+
+        // Only allow refunds for cancelled/failed tournaments
+        if (tournament.status !== "cancelled" && tournament.status !== "failed")
+          return errorResponse("Refunds are only available for cancelled or failed tournaments");
 
         // Verify amount matches entry fee
         if (amount > tournament.entry_fee)
           return errorResponse("Refund amount exceeds entry fee");
 
-        // Verify user is creator or participant
-        const isCreator = tournament.created_by === userId;
+        // Verify user is a participant
         const { data: participant } = await admin
           .from("tournament_participants")
-          .select("id")
+          .select("id, eliminated")
           .eq("tournament_id", tournament_id)
           .eq("user_id", userId)
           .maybeSingle();
 
+        const isCreator = tournament.created_by === userId;
         if (!isCreator && !participant)
           return errorResponse("Not associated with this tournament");
+
+        // Check if already refunded by looking for a prior refund (use eliminated as refund flag for participants)
+        if (participant && participant.eliminated) {
+          // We repurpose eliminated=true after cancellation as "refunded"
+          return errorResponse("Already refunded");
+        }
+
+        // Mark participant as refunded
+        if (participant) {
+          await admin
+            .from("tournament_participants")
+            .update({ eliminated: true })
+            .eq("id", participant.id);
+        }
 
         const profile = await getProfile(admin, userId);
         await admin
@@ -556,10 +574,58 @@ Deno.serve(async (req) => {
       }
 
       case "seasonal_reward": {
-        const { coins: rewardCoins } = params;
-        if (typeof rewardCoins !== "number" || rewardCoins <= 0 || rewardCoins > 1000)
-          return errorResponse("Invalid reward amount");
+        const { challenge_id, event_id } = params;
+        if (!challenge_id || typeof challenge_id !== "string")
+          return errorResponse("Invalid challenge_id");
+        if (!event_id || typeof event_id !== "string")
+          return errorResponse("Invalid event_id");
 
+        // Verify the challenge progress exists, is completed, and not yet claimed
+        const { data: prog, error: progErr } = await admin
+          .from("seasonal_challenge_progress")
+          .select("*")
+          .eq("user_id", userId)
+          .eq("challenge_id", challenge_id)
+          .eq("event_id", event_id)
+          .eq("completed", true)
+          .eq("reward_claimed", false)
+          .maybeSingle();
+
+        if (progErr || !prog)
+          return errorResponse("Challenge not completed or already claimed");
+
+        // Determine reward from challenge type (server-side catalog)
+        const SEASONAL_CHALLENGE_REWARDS: Record<string, number> = {
+          // win_count challenges
+          "spring_wins_5": 50, "spring_wins_15": 150, "spring_wins_30": 400,
+          "summer_wins_5": 50, "summer_wins_15": 150, "summer_wins_30": 400,
+          "autumn_wins_5": 50, "autumn_wins_15": 150, "autumn_wins_30": 400,
+          "winter_wins_5": 50, "winter_wins_15": 150, "winter_wins_30": 400,
+          // daily_wins challenges
+          "spring_daily_3": 30, "spring_daily_5": 75, "spring_daily_7": 200,
+          "summer_daily_3": 30, "summer_daily_5": 75, "summer_daily_7": 200,
+          "autumn_daily_3": 30, "autumn_daily_5": 75, "autumn_daily_7": 200,
+          "winter_daily_3": 30, "winter_daily_5": 75, "winter_daily_7": 200,
+          // streak challenges
+          "spring_streak_3": 100, "spring_streak_5": 250, "spring_streak_7": 500, "spring_streak_10": 1000,
+          "summer_streak_3": 100, "summer_streak_5": 250, "summer_streak_7": 500, "summer_streak_10": 1000,
+          "autumn_streak_3": 100, "autumn_streak_5": 250, "autumn_streak_7": 500, "autumn_streak_10": 1000,
+          "winter_streak_3": 100, "winter_streak_5": 250, "winter_streak_7": 500, "winter_streak_10": 1000,
+        };
+
+        const rewardCoins = SEASONAL_CHALLENGE_REWARDS[challenge_id];
+        if (!rewardCoins || rewardCoins <= 0)
+          return errorResponse("No coin reward for this challenge");
+
+        // Atomically mark as claimed
+        const { error: claimErr } = await admin
+          .from("seasonal_challenge_progress")
+          .update({ reward_claimed: true })
+          .eq("id", prog.id)
+          .eq("reward_claimed", false); // Prevent race condition
+        if (claimErr) return errorResponse("Failed to claim reward");
+
+        // Award coins
         const profile = await getProfile(admin, userId);
         await admin
           .from("profiles")
