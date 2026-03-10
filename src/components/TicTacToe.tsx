@@ -331,7 +331,7 @@ export default function TicTacToe() {
       setElapsedTime(0);
       timerRef.current = setInterval(() => {
         setElapsedTime(Math.floor((Date.now() - startTimeRef.current) / 1000));
-      }, 200);
+      }, 1000);
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [round, gameOver]);
