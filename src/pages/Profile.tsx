@@ -5,9 +5,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Trophy, Flame, Clock, Gamepad2, Crown, Coins,
-  Target, TrendingUp, Zap, Shield, Award,
+  Target, TrendingUp, Zap, Shield, Award, LogOut,
 } from "lucide-react";
 import { getLevelTitle, getLevelColor, xpForLevel } from "@/components/game/progression";
+import { toast } from "sonner";
 
 export default function Profile() {
   const { user } = useAuth();
