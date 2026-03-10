@@ -76,12 +76,12 @@ function ConfettiParticles({ tier }: { tier: string }) {
 
 // Fire particles for hot streaks (3+)
 function FireParticles() {
-  const particles = Array.from({ length: 25 }, (_, i) => ({
+  const particles = Array.from({ length: 10 }, (_, i) => ({
     id: `fire-${i}`,
-    x: 20 + Math.random() * 60,
-    size: 8 + Math.random() * 16,
-    delay: Math.random() * 1.5,
-    duration: 1 + Math.random() * 1.5,
+    x: 25 + Math.random() * 50,
+    size: 10 + Math.random() * 12,
+    delay: Math.random() * 1,
+    duration: 1 + Math.random() * 1,
   }));
 
   return (
@@ -89,8 +89,8 @@ function FireParticles() {
       {particles.map((p) => (
         <motion.div
           key={p.id}
-          initial={{ y: "100vh", x: `${p.x}vw`, opacity: 0.9, scale: 1 }}
-          animate={{ y: "-20vh", opacity: 0, scale: 0.2 }}
+          initial={{ y: "100vh", x: `${p.x}vw`, opacity: 0.8 }}
+          animate={{ y: "-20vh", opacity: 0 }}
           transition={{ duration: p.duration, delay: p.delay, ease: "easeOut" }}
           style={{
             position: "absolute",
@@ -98,7 +98,6 @@ function FireParticles() {
             height: p.size * 1.5,
             borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%",
             background: `radial-gradient(circle at 50% 70%, hsl(48,100%,55%), hsl(25,100%,55%), hsl(0,100%,45%))`,
-            filter: "blur(1px)",
           }}
         />
       ))}
