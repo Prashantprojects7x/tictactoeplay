@@ -128,21 +128,14 @@ function XPDisplay({ totalWins }: { totalWins: number }) {
   return (
     <div className="flex items-center gap-2.5 w-full max-w-[260px]">
       <div className="flex items-center gap-1.5">
-        <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 4, repeat: Infinity }}>
-          <Crown className="h-3.5 w-3.5 text-[hsl(var(--gold))]" />
-        </motion.div>
+        <Crown className="h-3.5 w-3.5 text-[hsl(var(--gold))]" />
         <span className="text-[10px] font-bold text-gradient-gold">Lv.{level}</span>
       </div>
       <div className="flex-1 h-2 rounded-full bg-secondary/60 overflow-hidden relative">
-        <motion.div
-          className="h-full rounded-full relative overflow-hidden"
-          style={{ background: "linear-gradient(90deg, hsl(265,90%,55%), hsl(265,90%,65%), hsl(290,85%,60%))" }}
-          initial={{ width: 0 }}
-          animate={{ width: `${xpPercent}%` }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2s_linear_infinite]" />
-        </motion.div>
+        <div
+          className="h-full rounded-full relative overflow-hidden transition-all duration-600 ease-out"
+          style={{ background: "linear-gradient(90deg, hsl(265,90%,55%), hsl(265,90%,65%), hsl(290,85%,60%))", width: `${xpPercent}%` }}
+        />
       </div>
       <span className="text-[9px] text-muted-foreground/60 font-mono font-semibold">{xpInLevel}/5</span>
     </div>
