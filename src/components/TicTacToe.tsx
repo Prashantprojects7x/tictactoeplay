@@ -34,31 +34,22 @@ import { useSeasonalEvents } from "@/hooks/useSeasonalEvents";
 // Win celebration is now in a separate component
 import WinCelebration from "./game/WinCelebration";
 
-// ─── Floating particles background ──────────────────────────────
+// ─── Lightweight CSS-only floating particles (no framer-motion overhead) ─
 function FloatingParticles() {
-  const particles = Array.from({ length: 30 }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    size: 1.5 + Math.random() * 3,
-    duration: 12 + Math.random() * 25,
-    delay: Math.random() * 12,
-    opacity: 0.06 + Math.random() * 0.12,
-    color: i % 3 === 0 ? "bg-primary" : i % 3 === 1 ? "bg-accent" : "bg-[hsl(var(--gold))]",
-  }));
   return (
     <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
-      {particles.map((p) => (
-        <motion.div
-          key={p.id}
-          className={`absolute rounded-full ${p.color}`}
-          style={{ width: p.size, height: p.size, left: `${p.x}%`, top: `${p.y}%`, opacity: p.opacity }}
-          animate={{
-            y: [0, -80, 0],
-            x: [0, 30 * (p.id % 2 === 0 ? 1 : -1), 0],
-            opacity: [p.opacity, p.opacity * 2.5, p.opacity],
+      {Array.from({ length: 8 }, (_, i) => (
+        <div
+          key={i}
+          className={`absolute rounded-full ${i % 3 === 0 ? "bg-primary" : i % 3 === 1 ? "bg-accent" : "bg-[hsl(var(--gold))]"}`}
+          style={{
+            width: 2 + (i % 3),
+            height: 2 + (i % 3),
+            left: `${(i * 13) % 100}%`,
+            top: `${(i * 17 + 10) % 100}%`,
+            opacity: 0.08 + (i % 3) * 0.04,
+            animation: `floatParticle ${14 + i * 3}s ease-in-out ${i * 1.5}s infinite`,
           }}
-          transition={{ duration: p.duration, delay: p.delay, repeat: Infinity, ease: "easeInOut" }}
         />
       ))}
     </div>
