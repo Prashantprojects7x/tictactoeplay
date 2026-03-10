@@ -348,9 +348,31 @@
   50% { transform: translateY(-10px); }
 }
 
+@keyframes floatParticle {
+  0%, 100% { transform: translateY(0) translateX(0); opacity: 0.08; }
+  50% { transform: translateY(-60px) translateX(20px); opacity: 0.16; }
+}
+
 @keyframes glowPulse {
   0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
+}
+
+.animate-pulse-slow {
+  animation: pulseSlow 8s ease-in-out infinite;
+}
+
+@keyframes pulseSlow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse-slow,
+  .animated-bg {
+    animation: none !important;
+  }
 }
 
 /* Fullscreen game mode */
