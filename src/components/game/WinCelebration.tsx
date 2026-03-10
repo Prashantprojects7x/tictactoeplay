@@ -34,18 +34,18 @@ const TIER_COLORS = {
 // Standard confetti particles
 function ConfettiParticles({ tier }: { tier: string }) {
   const colors = TIER_COLORS[tier as keyof typeof TIER_COLORS];
-  const count = tier === "legendary" ? 100 : tier === "epic" ? 80 : tier === "hot" ? 70 : 60;
+  const count = tier === "legendary" ? 40 : tier === "epic" ? 30 : tier === "hot" ? 25 : 20;
 
   const particles = Array.from({ length: count }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
     delay: Math.random() * 0.6,
-    duration: 1.5 + Math.random() * 2.5,
+    duration: 1.5 + Math.random() * 2,
     color: colors[i % colors.length],
-    size: 3 + Math.random() * (tier === "legendary" ? 12 : 8),
+    size: 4 + Math.random() * (tier === "legendary" ? 8 : 6),
     isCircle: Math.random() > 0.5,
-    rotation: 720 * (Math.random() > 0.5 ? 1 : -1),
-    drift: (Math.random() - 0.5) * 200,
+    rotation: 360 * (Math.random() > 0.5 ? 1 : -1),
+    drift: (Math.random() - 0.5) * 120,
   }));
 
   return (
@@ -53,13 +53,12 @@ function ConfettiParticles({ tier }: { tier: string }) {
       {particles.map((p) => (
         <motion.div
           key={p.id}
-          initial={{ y: -20, x: `${p.x}vw`, opacity: 1, rotate: 0, scale: 1 }}
+          initial={{ y: -20, x: `${p.x}vw`, opacity: 1, rotate: 0 }}
           animate={{
             y: "110vh",
             x: `calc(${p.x}vw + ${p.drift}px)`,
             opacity: 0,
             rotate: p.rotation,
-            scale: 0.3,
           }}
           transition={{ duration: p.duration, delay: p.delay, ease: "easeIn" }}
           style={{
@@ -77,12 +76,12 @@ function ConfettiParticles({ tier }: { tier: string }) {
 
 // Fire particles for hot streaks (3+)
 function FireParticles() {
-  const particles = Array.from({ length: 25 }, (_, i) => ({
+  const particles = Array.from({ length: 10 }, (_, i) => ({
     id: `fire-${i}`,
-    x: 20 + Math.random() * 60,
-    size: 8 + Math.random() * 16,
-    delay: Math.random() * 1.5,
-    duration: 1 + Math.random() * 1.5,
+    x: 25 + Math.random() * 50,
+    size: 10 + Math.random() * 12,
+    delay: Math.random() * 1,
+    duration: 1 + Math.random() * 1,
   }));
 
   return (
@@ -90,8 +89,8 @@ function FireParticles() {
       {particles.map((p) => (
         <motion.div
           key={p.id}
-          initial={{ y: "100vh", x: `${p.x}vw`, opacity: 0.9, scale: 1 }}
-          animate={{ y: "-20vh", opacity: 0, scale: 0.2 }}
+          initial={{ y: "100vh", x: `${p.x}vw`, opacity: 0.8 }}
+          animate={{ y: "-20vh", opacity: 0 }}
           transition={{ duration: p.duration, delay: p.delay, ease: "easeOut" }}
           style={{
             position: "absolute",
@@ -99,7 +98,6 @@ function FireParticles() {
             height: p.size * 1.5,
             borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%",
             background: `radial-gradient(circle at 50% 70%, hsl(48,100%,55%), hsl(25,100%,55%), hsl(0,100%,45%))`,
-            filter: "blur(1px)",
           }}
         />
       ))}
@@ -109,15 +107,15 @@ function FireParticles() {
 
 // Sparkle burst for epic streaks (5+)
 function SparkleBurst() {
-  const sparkles = Array.from({ length: 30 }, (_, i) => {
-    const angle = (i / 30) * Math.PI * 2;
-    const distance = 150 + Math.random() * 200;
+  const sparkles = Array.from({ length: 12 }, (_, i) => {
+    const angle = (i / 12) * Math.PI * 2;
+    const distance = 120 + Math.random() * 150;
     return {
       id: `sparkle-${i}`,
       endX: Math.cos(angle) * distance,
       endY: Math.sin(angle) * distance,
-      delay: Math.random() * 0.3,
-      size: 3 + Math.random() * 5,
+      delay: Math.random() * 0.2,
+      size: 3 + Math.random() * 4,
     };
   });
 
@@ -126,21 +124,19 @@ function SparkleBurst() {
       {sparkles.map((s) => (
         <motion.div
           key={s.id}
-          initial={{ x: "50vw", y: "50vh", opacity: 1, scale: 1 }}
+          initial={{ x: "50vw", y: "50vh", opacity: 1 }}
           animate={{
             x: `calc(50vw + ${s.endX}px)`,
             y: `calc(50vh + ${s.endY}px)`,
             opacity: 0,
-            scale: 0,
           }}
-          transition={{ duration: 1.2, delay: s.delay, ease: "easeOut" }}
+          transition={{ duration: 1, delay: s.delay, ease: "easeOut" }}
           style={{
             position: "absolute",
             width: s.size,
             height: s.size,
             borderRadius: "50%",
             backgroundColor: "hsl(48,100%,70%)",
-            boxShadow: "0 0 8px 2px hsl(48,100%,60%)",
           }}
         />
       ))}

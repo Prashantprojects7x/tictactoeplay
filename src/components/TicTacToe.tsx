@@ -34,31 +34,22 @@ import { useSeasonalEvents } from "@/hooks/useSeasonalEvents";
 // Win celebration is now in a separate component
 import WinCelebration from "./game/WinCelebration";
 
-// ─── Floating particles background ──────────────────────────────
+// ─── Lightweight CSS-only floating particles (no framer-motion overhead) ─
 function FloatingParticles() {
-  const particles = Array.from({ length: 30 }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    size: 1.5 + Math.random() * 3,
-    duration: 12 + Math.random() * 25,
-    delay: Math.random() * 12,
-    opacity: 0.06 + Math.random() * 0.12,
-    color: i % 3 === 0 ? "bg-primary" : i % 3 === 1 ? "bg-accent" : "bg-[hsl(var(--gold))]",
-  }));
   return (
     <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
-      {particles.map((p) => (
-        <motion.div
-          key={p.id}
-          className={`absolute rounded-full ${p.color}`}
-          style={{ width: p.size, height: p.size, left: `${p.x}%`, top: `${p.y}%`, opacity: p.opacity }}
-          animate={{
-            y: [0, -80, 0],
-            x: [0, 30 * (p.id % 2 === 0 ? 1 : -1), 0],
-            opacity: [p.opacity, p.opacity * 2.5, p.opacity],
+      {Array.from({ length: 8 }, (_, i) => (
+        <div
+          key={i}
+          className={`absolute rounded-full ${i % 3 === 0 ? "bg-primary" : i % 3 === 1 ? "bg-accent" : "bg-[hsl(var(--gold))]"}`}
+          style={{
+            width: 2 + (i % 3),
+            height: 2 + (i % 3),
+            left: `${(i * 13) % 100}%`,
+            top: `${(i * 17 + 10) % 100}%`,
+            opacity: 0.08 + (i % 3) * 0.04,
+            animation: `floatParticle ${14 + i * 3}s ease-in-out ${i * 1.5}s infinite`,
           }}
-          transition={{ duration: p.duration, delay: p.delay, repeat: Infinity, ease: "easeInOut" }}
         />
       ))}
     </div>
@@ -137,21 +128,14 @@ function XPDisplay({ totalWins }: { totalWins: number }) {
   return (
     <div className="flex items-center gap-2.5 w-full max-w-[260px]">
       <div className="flex items-center gap-1.5">
-        <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 4, repeat: Infinity }}>
-          <Crown className="h-3.5 w-3.5 text-[hsl(var(--gold))]" />
-        </motion.div>
+        <Crown className="h-3.5 w-3.5 text-[hsl(var(--gold))]" />
         <span className="text-[10px] font-bold text-gradient-gold">Lv.{level}</span>
       </div>
       <div className="flex-1 h-2 rounded-full bg-secondary/60 overflow-hidden relative">
-        <motion.div
-          className="h-full rounded-full relative overflow-hidden"
-          style={{ background: "linear-gradient(90deg, hsl(265,90%,55%), hsl(265,90%,65%), hsl(290,85%,60%))" }}
-          initial={{ width: 0 }}
-          animate={{ width: `${xpPercent}%` }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2s_linear_infinite]" />
-        </motion.div>
+        <div
+          className="h-full rounded-full relative overflow-hidden transition-all duration-600 ease-out"
+          style={{ background: "linear-gradient(90deg, hsl(265,90%,55%), hsl(265,90%,65%), hsl(290,85%,60%))", width: `${xpPercent}%` }}
+        />
       </div>
       <span className="text-[9px] text-muted-foreground/60 font-mono font-semibold">{xpInLevel}/5</span>
     </div>
@@ -340,7 +324,7 @@ export default function TicTacToe() {
       setElapsedTime(0);
       timerRef.current = setInterval(() => {
         setElapsedTime(Math.floor((Date.now() - startTimeRef.current) / 1000));
-      }, 200);
+      }, 1000);
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [round, gameOver]);
@@ -715,13 +699,10 @@ export default function TicTacToe() {
       <FloatingParticles />
       <div className="pointer-events-none absolute inset-0 bg-grid-pattern opacity-30 z-0" />
 
-      {/* Ambient glow orbs */}
-      <motion.div className="pointer-events-none absolute top-[10%] left-[5%] h-96 w-96 rounded-full bg-primary/6 blur-[140px] z-0"
-        animate={{ opacity: [0.4, 0.8, 0.4], scale: [1, 1.1, 1] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} />
-      <motion.div className="pointer-events-none absolute bottom-[10%] right-[5%] h-96 w-96 rounded-full bg-accent/5 blur-[140px] z-0"
-        animate={{ opacity: [0.3, 0.7, 0.3], scale: [1, 1.15, 1] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }} />
-      <motion.div className="pointer-events-none absolute top-[55%] left-[45%] h-64 w-64 rounded-full bg-[hsl(var(--gold))]/3 blur-[120px] z-0"
-        animate={{ opacity: [0.2, 0.5, 0.2] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 4 }} />
+      {/* Ambient glow orbs — CSS only for performance */}
+      <div className="pointer-events-none absolute top-[10%] left-[5%] h-96 w-96 rounded-full bg-primary/6 blur-[100px] z-0 animate-pulse-slow" />
+      <div className="pointer-events-none absolute bottom-[10%] right-[5%] h-96 w-96 rounded-full bg-accent/5 blur-[100px] z-0 animate-pulse-slow" style={{ animationDelay: '2s' }} />
+      <div className="pointer-events-none absolute top-[55%] left-[45%] h-64 w-64 rounded-full bg-[hsl(var(--gold))]/3 blur-[80px] z-0 animate-pulse-slow" style={{ animationDelay: '4s' }} />
 
       <AnimatePresence>{showConfetti && <WinCelebration winStreak={currentWinStreak} />}</AnimatePresence>
 
@@ -743,15 +724,11 @@ export default function TicTacToe() {
         {/* Title */}
         <motion.div className="flex flex-col items-center gap-1.5 sm:gap-3" initial={{ y: -40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }}>
           <div className="flex items-center gap-2 sm:gap-3">
-            <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
-              <Swords className="h-4 w-4 sm:h-6 sm:w-6 text-primary opacity-70" />
-            </motion.div>
+            <Swords className="h-4 w-4 sm:h-6 sm:w-6 text-primary opacity-70" />
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tighter" style={{ fontFamily: "'Space Grotesk', 'JetBrains Mono', monospace" }}>
               <span className="text-gradient-title">TicTacToe</span>
             </h1>
-            <motion.div animate={{ rotate: [0, -10, 10, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}>
-              <Swords className="h-4 w-4 sm:h-6 sm:w-6 text-accent opacity-70" />
-            </motion.div>
+            <Swords className="h-4 w-4 sm:h-6 sm:w-6 text-accent opacity-70" />
           </div>
           <div className="flex items-center gap-3 sm:gap-5 text-[9px] sm:text-[10px] text-muted-foreground font-semibold tracking-widest uppercase">
             <span className="flex items-center gap-1"><Target className="h-3 w-3 text-primary/60" /> R{round}</span>
