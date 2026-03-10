@@ -454,29 +454,47 @@ Deno.serve(async (req) => {
         if (!tournament_id || typeof amount !== "number" || amount <= 0 || amount > 10000)
           return errorResponse("Invalid parameters");
 
-        // Verify the tournament exists and the user is the creator or a participant
+        // Verify the tournament exists
         const { data: tournament } = await admin
           .from("tournaments")
-          .select("id, created_by, entry_fee")
+          .select("id, created_by, entry_fee, status")
           .eq("id", tournament_id)
           .single();
         if (!tournament) return errorResponse("Tournament not found");
+
+        // Only allow refunds for cancelled/failed tournaments
+        if (tournament.status !== "cancelled" && tournament.status !== "failed")
+          return errorResponse("Refunds are only available for cancelled or failed tournaments");
 
         // Verify amount matches entry fee
         if (amount > tournament.entry_fee)
           return errorResponse("Refund amount exceeds entry fee");
 
-        // Verify user is creator or participant
-        const isCreator = tournament.created_by === userId;
+        // Verify user is a participant
         const { data: participant } = await admin
           .from("tournament_participants")
-          .select("id")
+          .select("id, eliminated")
           .eq("tournament_id", tournament_id)
           .eq("user_id", userId)
           .maybeSingle();
 
+        const isCreator = tournament.created_by === userId;
         if (!isCreator && !participant)
           return errorResponse("Not associated with this tournament");
+
+        // Check if already refunded by looking for a prior refund (use eliminated as refund flag for participants)
+        if (participant && participant.eliminated) {
+          // We repurpose eliminated=true after cancellation as "refunded"
+          return errorResponse("Already refunded");
+        }
+
+        // Mark participant as refunded
+        if (participant) {
+          await admin
+            .from("tournament_participants")
+            .update({ eliminated: true })
+            .eq("id", participant.id);
+        }
 
         const profile = await getProfile(admin, userId);
         await admin

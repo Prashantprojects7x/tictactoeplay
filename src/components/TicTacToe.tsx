@@ -382,16 +382,20 @@ export default function TicTacToe() {
         // Award coins only to logged-in winner in online mode
         if (myWin && user) shouldAwardCoins = true;
 
-        // Report tournament match result
+        // Report tournament match result via server-side validation
         if (tournamentMatchIdRef.current && user) {
           const winnerId = myWin ? user.id : null;
           if (winnerId) {
-            supabase
-              .from("tournament_matches")
-              .update({ winner_id: winnerId, status: "finished", finished_at: new Date().toISOString() })
-              .eq("id", tournamentMatchIdRef.current)
-              .then(() => {
-                toast("🏟️ Tournament match result recorded!");
+            supabase.functions
+              .invoke("economy", {
+                body: { action: "report_match_result", match_id: tournamentMatchIdRef.current, winner_id: winnerId },
+              })
+              .then(({ error }) => {
+                if (error) {
+                  console.error("Failed to report match result:", error);
+                } else {
+                  toast("🏟️ Tournament match result recorded!");
+                }
                 tournamentMatchIdRef.current = null;
                 tournamentIdRef.current = null;
               });
