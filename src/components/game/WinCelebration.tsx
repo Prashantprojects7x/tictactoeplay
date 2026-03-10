@@ -34,18 +34,18 @@ const TIER_COLORS = {
 // Standard confetti particles
 function ConfettiParticles({ tier }: { tier: string }) {
   const colors = TIER_COLORS[tier as keyof typeof TIER_COLORS];
-  const count = tier === "legendary" ? 100 : tier === "epic" ? 80 : tier === "hot" ? 70 : 60;
+  const count = tier === "legendary" ? 40 : tier === "epic" ? 30 : tier === "hot" ? 25 : 20;
 
   const particles = Array.from({ length: count }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
     delay: Math.random() * 0.6,
-    duration: 1.5 + Math.random() * 2.5,
+    duration: 1.5 + Math.random() * 2,
     color: colors[i % colors.length],
-    size: 3 + Math.random() * (tier === "legendary" ? 12 : 8),
+    size: 4 + Math.random() * (tier === "legendary" ? 8 : 6),
     isCircle: Math.random() > 0.5,
-    rotation: 720 * (Math.random() > 0.5 ? 1 : -1),
-    drift: (Math.random() - 0.5) * 200,
+    rotation: 360 * (Math.random() > 0.5 ? 1 : -1),
+    drift: (Math.random() - 0.5) * 120,
   }));
 
   return (
@@ -53,13 +53,12 @@ function ConfettiParticles({ tier }: { tier: string }) {
       {particles.map((p) => (
         <motion.div
           key={p.id}
-          initial={{ y: -20, x: `${p.x}vw`, opacity: 1, rotate: 0, scale: 1 }}
+          initial={{ y: -20, x: `${p.x}vw`, opacity: 1, rotate: 0 }}
           animate={{
             y: "110vh",
             x: `calc(${p.x}vw + ${p.drift}px)`,
             opacity: 0,
             rotate: p.rotation,
-            scale: 0.3,
           }}
           transition={{ duration: p.duration, delay: p.delay, ease: "easeIn" }}
           style={{
