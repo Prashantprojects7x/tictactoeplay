@@ -706,13 +706,10 @@ export default function TicTacToe() {
       <FloatingParticles />
       <div className="pointer-events-none absolute inset-0 bg-grid-pattern opacity-30 z-0" />
 
-      {/* Ambient glow orbs */}
-      <motion.div className="pointer-events-none absolute top-[10%] left-[5%] h-96 w-96 rounded-full bg-primary/6 blur-[140px] z-0"
-        animate={{ opacity: [0.4, 0.8, 0.4], scale: [1, 1.1, 1] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} />
-      <motion.div className="pointer-events-none absolute bottom-[10%] right-[5%] h-96 w-96 rounded-full bg-accent/5 blur-[140px] z-0"
-        animate={{ opacity: [0.3, 0.7, 0.3], scale: [1, 1.15, 1] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }} />
-      <motion.div className="pointer-events-none absolute top-[55%] left-[45%] h-64 w-64 rounded-full bg-[hsl(var(--gold))]/3 blur-[120px] z-0"
-        animate={{ opacity: [0.2, 0.5, 0.2] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 4 }} />
+      {/* Ambient glow orbs — CSS only for performance */}
+      <div className="pointer-events-none absolute top-[10%] left-[5%] h-96 w-96 rounded-full bg-primary/6 blur-[100px] z-0 animate-pulse-slow" />
+      <div className="pointer-events-none absolute bottom-[10%] right-[5%] h-96 w-96 rounded-full bg-accent/5 blur-[100px] z-0 animate-pulse-slow" style={{ animationDelay: '2s' }} />
+      <div className="pointer-events-none absolute top-[55%] left-[45%] h-64 w-64 rounded-full bg-[hsl(var(--gold))]/3 blur-[80px] z-0 animate-pulse-slow" style={{ animationDelay: '4s' }} />
 
       <AnimatePresence>{showConfetti && <WinCelebration winStreak={currentWinStreak} />}</AnimatePresence>
 

@@ -107,15 +107,15 @@ function FireParticles() {
 
 // Sparkle burst for epic streaks (5+)
 function SparkleBurst() {
-  const sparkles = Array.from({ length: 30 }, (_, i) => {
-    const angle = (i / 30) * Math.PI * 2;
-    const distance = 150 + Math.random() * 200;
+  const sparkles = Array.from({ length: 12 }, (_, i) => {
+    const angle = (i / 12) * Math.PI * 2;
+    const distance = 120 + Math.random() * 150;
     return {
       id: `sparkle-${i}`,
       endX: Math.cos(angle) * distance,
       endY: Math.sin(angle) * distance,
-      delay: Math.random() * 0.3,
-      size: 3 + Math.random() * 5,
+      delay: Math.random() * 0.2,
+      size: 3 + Math.random() * 4,
     };
   });
 
@@ -124,21 +124,19 @@ function SparkleBurst() {
       {sparkles.map((s) => (
         <motion.div
           key={s.id}
-          initial={{ x: "50vw", y: "50vh", opacity: 1, scale: 1 }}
+          initial={{ x: "50vw", y: "50vh", opacity: 1 }}
           animate={{
             x: `calc(50vw + ${s.endX}px)`,
             y: `calc(50vh + ${s.endY}px)`,
             opacity: 0,
-            scale: 0,
           }}
-          transition={{ duration: 1.2, delay: s.delay, ease: "easeOut" }}
+          transition={{ duration: 1, delay: s.delay, ease: "easeOut" }}
           style={{
             position: "absolute",
             width: s.size,
             height: s.size,
             borderRadius: "50%",
             backgroundColor: "hsl(48,100%,70%)",
-            boxShadow: "0 0 8px 2px hsl(48,100%,60%)",
           }}
         />
       ))}
