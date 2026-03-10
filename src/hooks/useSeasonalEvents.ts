@@ -123,17 +123,14 @@ export function useSeasonalEvents() {
     const challenge = challenges.find((c) => c.id === challengeId);
     if (!challenge) return false;
 
-    // Mark as claimed
-    await supabase
-      .from("seasonal_challenge_progress")
-      .update({ reward_claimed: true })
-      .eq("id", prog.id);
+    // Mark as claimed and award reward via server-side edge function
+    const { error } = await supabase.functions.invoke("economy", {
+      body: { action: "seasonal_reward", challenge_id: challengeId, event_id: currentEvent.id },
+    });
 
-    // Award reward via economy edge function for coins
-    if (challenge.reward_type === "coins") {
-      await supabase.functions.invoke("economy", {
-        body: { action: "seasonal_reward", coins: challenge.reward_value },
-      });
+    if (error) {
+      toast.error("Failed to claim reward");
+      return false;
     }
 
     toast(`🎁 Claimed: ${challenge.name} reward!`);
