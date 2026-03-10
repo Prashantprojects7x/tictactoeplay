@@ -11,7 +11,7 @@ import { getLevelTitle, getLevelColor, xpForLevel } from "@/components/game/prog
 import { toast } from "sonner";
 
 export default function Profile() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Record<string, any> | null>(null);
   const [loading, setLoading] = useState(true);
